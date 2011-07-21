@@ -20,7 +20,7 @@ endef
 obj/%.o: src/%.cxx src/pre.hxx.gch
 	$(compile) -include pre.hxx
 
-bin/nyeh.x: obj/main.o
+bin/nyeh.x: obj/main.o obj/HighguiCam.o
 	$(link)
 
 src/pre.hxx.gch: src/pre.hxx
