@@ -105,6 +105,8 @@ UvcCam::UvcCam(int device) {
     CDISABLE(V4L2_CID_HUE_AUTO);
     CDISABLE(V4L2_CID_AUTOBRIGHTNESS);
 #undef CDISABLE
+
+    frame_.create(480, 640, CV_8UC3);
 }
 
 void UvcCam::disable(const std::string& name, int ctrlid) {
@@ -124,11 +126,11 @@ UvcCam::~UvcCam() {
     destroy();
 }
 
-const cv::Mat& UvcCam::jpeg() const {
+const cv::Mat & UvcCam::jpeg() const {
     return jpeg_;
 }
 
-const cv::Mat& UvcCam::frame() const {
+const cv::Mat & UvcCam::frame() const {
     return frame_;
 }
 
@@ -140,9 +142,16 @@ void UvcCam::grabImage() {
     if (v4l2_ioctl(fd, VIDIOC_DQBUF, &buf)) {
         throw std::string("buffer dequeue fail'd");
     }
-    jpeg_.create(buf.bytesused, 1, CV_8U);
-    memcpy(jpeg_.ptr(0), map[buf.index], buf.bytesused);
-    frame_ = cv::imdecode(jpeg_, 1);
+
+    if (buf.bytesused > 0xaf) {
+        cv::Mat cjpg(buf.bytesused, 1, CV_8U);
+        memcpy(cjpg.ptr(0), map[buf.index], buf.bytesused);
+        cv::Mat cfrm = cv::imdecode(cjpg, 1);
+        if (cfrm.dims > 0) {
+            jpeg_ = cjpg;
+            frame_ = cfrm;
+        }
+    }
 
     if (v4l2_ioctl(fd, VIDIOC_QBUF, &buf)) {
         throw std::string("buffer queue fail'd");

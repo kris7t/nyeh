@@ -1,5 +1,8 @@
 #pragma once
 
+class Cam;
+typedef std::tr1::shared_ptr<Cam> Cam_;
+
 class Cam {
 public:
     virtual ~Cam() {}
@@ -8,5 +11,5 @@ public:
     virtual const cv::Mat& jpeg() const = 0;
     virtual const cv::Mat& frame() const = 0;
 
-    static std::tr1::shared_ptr<Cam> create(int camId);
+    static Cam_ create(int camId);
 };

@@ -3,6 +3,8 @@
 HighguiCam::HighguiCam(int device) : cap_(device) {
     cap_.set(CV_CAP_PROP_FRAME_WIDTH, 640);
     cap_.set(CV_CAP_PROP_FRAME_HEIGHT, 480);
+    if (!cap_.isOpened())
+        throw std::string("can't open device");
 }
 
 void HighguiCam::grabImage() {
@@ -12,10 +14,10 @@ void HighguiCam::grabImage() {
     jpeg_ = cv::Mat(ret);
 }
 
-const cv::Mat& HighguiCam::jpeg() const {
+const cv::Mat & HighguiCam::jpeg() const {
     return jpeg_;
 }
 
-const cv::Mat& HighguiCam::frame() const {
+const cv::Mat & HighguiCam::frame() const {
     return frame_;
 }
