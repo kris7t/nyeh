@@ -147,7 +147,10 @@ void UvcCam::grabImage() {
         cv::Mat cjpg(buf.bytesused, 1, CV_8U);
         memcpy(cjpg.ptr(0), map[buf.index], buf.bytesused);
         cv::Mat cfrm = cv::imdecode(cjpg, 1);
-        if (cfrm.dims > 0) {
+
+        if (cfrm.dims > 0 &&
+            //(cfrm.type() & CV_MAGIC_MASK) == CV_MAT_MAGIC_VAL &&
+            (cfrm.cols > 0 && cfrm.rows > 0)) {
             jpeg_ = cjpg;
             frame_ = cfrm;
         }
