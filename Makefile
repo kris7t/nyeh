@@ -1,7 +1,7 @@
 CXX := g++
 LD := g++
 
-PACKAGES := opencv glew libglfw
+PACKAGES := opencv glew libglfw glu
 CXXFLAGS := -Wall -std=gnu++0x $(shell pkg-config --cflags $(PACKAGES)) -Isrc -c
 LDFLAGS := $(shell pkg-config --libs $(PACKAGES))
 
@@ -20,7 +20,7 @@ endef
 obj/%.o: src/%.cxx src/pre.hxx.gch
 	$(compile) -include pre.hxx
 
-bin/nyeh.x: obj/main.o
+bin/nyeh.x: obj/main.o obj/3DView.o obj/GameUpdater.o
 	$(link)
 
 src/pre.hxx.gch: src/pre.hxx
