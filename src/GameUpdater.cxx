@@ -11,7 +11,7 @@ static void doCollosion(Ball & a, Ball & b) {
     diff.y = a.position.y - b.position.y;
     diff.z = a.position.z - b.position.z;
     float norm = cv::norm(diff);
-    if (norm >= 1.0e-5) {
+    if (norm >= 1.0e-3) {
         diff.x /= norm;
         diff.y /= norm;
         diff.z /= norm;

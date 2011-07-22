@@ -1,10 +1,28 @@
 #include "model.hxx"
 #include "3DView.hxx"
 #include "GameUpdater.hxx"
+#include "Cam.hxx"
+#include "Hand.hxx"
+#include "HistogramHand.hxx"
+
+bool running;
+
+void camLoop(Cam_ c, Hand_ h) {
+    do {
+        c->grabImage();
+        h->update(c->frame());
+    } while (running);
+}
 
 int main(int argc, char * argv[]) {
+    if (argc < 2) return -1;
+
+    Cam_ c = Cam::create(atoi(argv[1]));
+    Hand_ hh(new HistogramHand(128, .4, 2852.11));
+
+    hh->calibrate(c);
+
     ThreeDView view(1366, 768);
-    bool running;
     
     Balls balls;
     Ball b;
@@ -21,10 +39,14 @@ int main(int argc, char * argv[]) {
     b.position = cv::Point3f(-.2f, 8.0f, .3f);
     balls.push_back(b);
     GameUpdater game(cv::Size2f(2.4f, 1.6f));
+    
+    running = true;
+    
+    boost::thread camThread(boost::bind(&camLoop, c, hh));
 
     do {
         glfwSetTime(0.0);
-        view.render(balls);
+        view.render(balls, hh);
         glfwSwapBuffers();
         glfwSleep(0.01);
         game.tick(glfwGetTime(), balls);

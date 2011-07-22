@@ -2,9 +2,9 @@
 
 bool glInited = false;
 
-static void renderCube(const Ball & ball) {
+static void renderCube(cv::Point3f pos) {
     glPushMatrix();
-    glTranslatef(ball.position.x, ball.position.y, ball.position.z);
+    glTranslatef(pos.x, pos.y, pos.z);
     glBegin(GL_QUADS);
     glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
     glVertex3f(-.1f, .1f, .1f);
@@ -40,8 +40,12 @@ static void renderCube(const Ball & ball) {
     glPopMatrix();
 }
 
+static void renderCubeEnemy(const Ball & ball) {
+    renderCube(ball.position);
+}
+
 BallRenderer ballRenderers[] = {
-    &renderCube   
+    &renderCubeEnemy 
 };
 
 ThreeDView::ThreeDView(int width, int height) {
@@ -74,11 +78,17 @@ ThreeDView::~ThreeDView() {
     glfwTerminate();
 }
 
-void ThreeDView::render(const Balls & balls) {
+void ThreeDView::render(const Balls & balls, Hand_ hand) const {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
     for (Balls::const_iterator it = balls.begin();
             it != balls.end(); ++it) {
         ballRenderers[it->type](*it);
     }
+    
+    cv::Point3f renderHand;
+    renderHand.x = (hand->position().x - 320) * 2.4 / 320;
+    renderHand.z = (hand->position().y - 240) * 1.6 / 240;
+    renderHand.y = 8;
+    renderCube(renderHand);
 }
