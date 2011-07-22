@@ -1,17 +1,15 @@
 #pragma once
 
-class HighguiCam {
+#include "Cam.hxx"
+
+class HighguiCam : public Cam {
 public:
     HighguiCam(int device = 0);
 
     void grabImage();
 
-    const cv::Mat& jpeg() const {
-        return jpeg_;
-    }
-    const cv::Mat& frame() const {
-        return frame_;
-    }
+    const cv::Mat& jpeg() const;
+    const cv::Mat& frame() const;
 
 private:
     cv::Mat jpeg_;

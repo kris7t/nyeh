@@ -11,3 +11,11 @@ void HighguiCam::grabImage() {
     cv::imencode(".jpg", frame_, ret);
     jpeg_ = cv::Mat(ret);
 }
+
+const cv::Mat& HighguiCam::jpeg() const {
+    return jpeg_;
+}
+
+const cv::Mat& HighguiCam::frame() const {
+    return frame_;
+}
