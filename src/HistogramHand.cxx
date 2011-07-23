@@ -127,13 +127,8 @@ void HistogramHand::update(const cv::Mat & cam) {
 
     cv::findContours(bp, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
 
-    /*for(auto it = contours.begin(); it != contours.end(); ++it)
-        cv::convexHull(*it, *it);*/
-
     cv::Point2f center_best;
     float radius_best = -1;
-
-    
 
     for(auto it = contours.begin(); it != contours.end(); ++it) {
         cv::Point2f center;
@@ -176,14 +171,12 @@ void HistogramHand::update(const cv::Mat & cam) {
     velocity_.x = prediction.at<float>(1, 0);
     velocity_.y = prediction.at<float>(3, 0);
     velocity_.z = prediction.at<float>(5, 0);
-
-    imshow("binary", binary);
 }
 
-const cv::Point3f & HistogramHand::position() const {
+volatile const cv::Point3f & HistogramHand::position() volatile const {
     return position_;
 }
 
-const cv::Point3f & HistogramHand::velocity() const {
+volatile const cv::Point3f & HistogramHand::velocity() volatile const {
     return velocity_;
 }

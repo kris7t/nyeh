@@ -1,5 +1,18 @@
+#include "model.hxx"
+#include "3DView.hxx"
+#include "GameUpdater.hxx"
 #include "Cam.hxx"
+#include "Hand.hxx"
 #include "HistogramHand.hxx"
+
+bool running;
+
+void camLoop(Cam_ c, Hand_ h) {
+    do {
+        c->grabImage();
+        h->update(c->frame());
+    } while (running);
+}
 
 int main(int argc, char * argv[]) {
     if (argc < 5) {
@@ -8,23 +21,44 @@ int main(int argc, char * argv[]) {
     }
 
     Cam_ c = Cam::create(atoi(argv[1]));
-    HistogramHand hh(atoi(argv[2]), atof(argv[3]), atof(argv[4]));
+    Hand_ hh(new HistogramHand(atoi(argv[2]), atof(argv[3]), atof(argv[4])));
 
-    hh.calibrate(c);
+    hh->calibrate(c);
 
-    cv::namedWindow("test");
-    cv::namedWindow("test");
+    Tube tube;
+    tube.halfSize = cv::Size2f(2.4, 1.6);
+    tube.goal = 3;
 
-    cv::Mat draw;
+    ThreeDView view(1366, 768, tube);
+    
+    Balls balls;
+    Ball b;
+    b.type = 0;
+    b.velocity = cv::Point3f(0, -1, 0);
+    b.position = cv::Point3f(-2.0f, 8.0f, 2.0f);
+    balls.push_back(b);
+    b.type = 0;
+    b.velocity = cv::Point3f(0, -0.2f, 1);
+    b.position = cv::Point3f(2.0f, 8.0f, 1.0f);
+    balls.push_back(b);
+    b.type = 0;
+    b.velocity = cv::Point3f(1, -0.2f, 0);
+    b.position = cv::Point3f(-.2f, 8.0f, .3f);
+    balls.push_back(b);
+    GameUpdater game(tube);
+    
+    running = true;
+    
+    boost::thread camThread(boost::bind(&camLoop, c, hh));
 
     do {
-        c->grabImage();
-        hh.update(c->frame());
-        draw = c->frame().clone();
-        if (hh.position().z > 0)
-            circle(draw, cv::Point2i(hh.position().x, hh.position().y), hh.position().z, cv::Scalar(0, 255, 0), CV_FILLED);
-        cv::imshow("test", draw);
-    } while (cv::waitKey(10) != 27);
+        glfwSetTime(0.0);
+        view.render(balls, hh);
+        glfwSwapBuffers();
+        glfwSleep(0.01);
+        game.tick(glfwGetTime(), balls);
+        running = !glfwGetKey(GLFW_KEY_ESC);
+    } while (running);
 
     return 0;
 }
