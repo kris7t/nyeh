@@ -25,4 +25,9 @@
 #include <boost/format.hpp>
 #include <boost/lexical_cast.hpp>
 
+// socket
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netdb.h>
+
 #endif
