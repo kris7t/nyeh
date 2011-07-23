@@ -11,30 +11,25 @@ static void doCollision(Ball & a, Ball & b) {
     diff.y = a.position.y - b.position.y;
     diff.z = a.position.z - b.position.z;
     float norm = cv::norm(diff);
-    if (norm >= 1.0e-3) {
-        diff.x /= norm;
-        diff.y /= norm;
-        diff.z /= norm;
-        float dota = a.velocity.x * diff.x
-            + a.velocity.y * diff.y
-            + a.velocity.z * diff.z;
-        float dotb = b.velocity.x * diff.x
-            + b.velocity.y * diff.y
-            + b.velocity.z * diff.z;
-        a.velocity.x -= 2 * dota * diff.x;
-        a.velocity.y -= 2 * dota * diff.y;
-        a.velocity.z -= 2 * dota * diff.z;
-        b.velocity.x += 2 * dotb * diff.x;
-        b.velocity.y += 2 * dotb * diff.y;
-        b.velocity.z += 2 * dotb * diff.z;
-    } else {
-        a.velocity.x *= -1;
-        a.velocity.y *= -1;
-        a.velocity.z *= -1;
-        b.velocity.x *= -1;
-        b.velocity.y *= -1;
-        b.velocity.z *= -1;
-    }
+    diff.x /= norm;
+    diff.y /= norm;
+    diff.z /= norm;
+    float dota = a.velocity.x * diff.x
+        + a.velocity.y * diff.y
+        + a.velocity.z * diff.z;
+    float dotb = b.velocity.x * diff.x
+        + b.velocity.y * diff.y
+        + b.velocity.z * diff.z;
+    float dotdiff = dota - dotb,
+          cx = dotdiff * diff.x,
+          cy = dotdiff * diff.y,
+          cz = dotdiff * diff.z;
+    a.velocity.x -= cx;
+    a.velocity.y -= cy;
+    a.velocity.z -= cz;
+    b.velocity.x += cx;
+    b.velocity.y += cy;
+    b.velocity.z += cz;
 }
 
 void GameUpdater::tick(double dt, Balls & balls) const {
@@ -47,6 +42,8 @@ void GameUpdater::tick(double dt, Balls & balls) const {
             Balls::iterator del = it;
             --it;
             balls.erase(del);
+            std::cout << "\a" << std::flush;
+            continue;
         }
         if (std::abs(it->position.x) >= tube_.halfSize.width) {
             it->velocity.x *= -1;

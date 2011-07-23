@@ -6,7 +6,7 @@ CXXFLAGS := -Wall -std=gnu++0x $(shell pkg-config --cflags $(PACKAGES)) -Isrc -c
 LDFLAGS := $(shell pkg-config --libs $(PACKAGES)) -lboost_thread
 
 # un-uncomment for release
-CXXFLAGS += -ggdb -D_DEBUG
+CXXFLAGS += -ggdb -D_NYEH_DEBUG
 LDFLAGS += -ggdb
 
 define compile

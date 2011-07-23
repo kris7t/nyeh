@@ -13,8 +13,8 @@ static const cv::Mat closekernel = (cv::Mat_<uchar>(cv::Size(5,5)) <<
     0, 1, 1, 1, 0);
 static const float sigma2_s = 10;
 static const float sigma2_r = 10;
-static const float sigma2_ms = 9;
-static const float sigma2_mr = 16;
+static const float sigma2_ms = 4;
+static const float sigma2_mr = 9;
 static const float L = 100;
 
 HistogramHand::HistogramHand(double fillratio, double t) : fillratio_(fillratio), kf(6, 3, 0), measurement(3, 1, CV_32FC1) {
@@ -115,6 +115,21 @@ void HistogramHand::calibrate(Cam_ cap) {
     }
 }
 
+static inline bool findBlob(const cv::Mat & binsearch, cv::Point * loc = NULL) {
+    for (int y = 0; y < binsearch.rows; ++y) {
+        for (int x = 0; x < binsearch.cols; ++x) {
+            if (binsearch.at<uchar>(y, x)) {
+                if (loc) {
+                    loc->x = x;
+                    loc->y = y;
+                }
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
 void HistogramHand::update(const cv::Mat & cam) {
     contours.clear();
 
@@ -126,7 +141,7 @@ void HistogramHand::update(const cv::Mat & cam) {
 
     int s = 0;
     int e = 255;
-    while (std::abs(s-e) > 1) {
+    while (std::abs(s - e) > 1) {
         cv::Rect rect_iter;
         int area_iter;
 
@@ -134,23 +149,17 @@ void HistogramHand::update(const cv::Mat & cam) {
 
         cv::threshold(bp, binsearch, v, 255, CV_THRESH_BINARY);
         cv::erode(binsearch, binsearch, closekernel);
-        cv::dilate(binsearch, binsearch, closekernel);
 
         cv::Point maxl;
-        double maxv;
 
-        cv::minMaxLoc(binsearch, NULL, &maxv, NULL, &maxl);
-
-        if (maxv == 0) {
+        if (findBlob(binsearch, &maxl) == 0) {
             e = v;
             continue;
         }
 
         area_iter = cv::floodFill(binsearch, maxl, cv::Scalar(0), &rect_iter, cv::Scalar(0), cv::Scalar(0), 8 | CV_FLOODFILL_FIXED_RANGE);
 
-        cv::minMaxLoc(binsearch, NULL, &maxv, NULL, &maxl);
-
-        if (maxv > 0) {
+        if (findBlob(binsearch)) {
             s = v;
         } else {
             e = v;
@@ -173,15 +182,15 @@ void HistogramHand::update(const cv::Mat & cam) {
     }
 
     //make the kalman filter predict
-    const cv::Mat & prediction = kf.predict();
+    kf.predict();
 
-    position_.x = prediction.at<float>(0, 0);
-    position_.y = prediction.at<float>(2, 0);
-    position_.z = prediction.at<float>(4, 0);
+    position_.x = kf.statePost.at<float>(0, 0);
+    position_.y = kf.statePost.at<float>(2, 0);
+    position_.z = kf.statePost.at<float>(4, 0);
 
-    velocity_.x = prediction.at<float>(1, 0);
-    velocity_.y = prediction.at<float>(3, 0);
-    velocity_.z = prediction.at<float>(5, 0);
+    velocity_.x = kf.statePost.at<float>(1, 0);
+    velocity_.y = kf.statePost.at<float>(3, 0);
+    velocity_.z = kf.statePost.at<float>(5, 0);
 }
 
 volatile const cv::Point3f & HistogramHand::position() volatile const {
