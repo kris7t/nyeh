@@ -17,7 +17,7 @@ static const float sigma2_ms = 9;
 static const float sigma2_mr = 16;
 static const float L = 100;
 
-HistogramHand::HistogramHand(double thresh, double fillratio, double t) : thresh_(thresh), fillratio_(fillratio), kf(6, 3, 0), measurement(3, 1, CV_32FC1) {
+HistogramHand::HistogramHand(double fillratio, double t) : fillratio_(fillratio), kf(6, 3, 0), measurement(3, 1, CV_32FC1) {
 
     kf.transitionMatrix = (cv::Mat_<float>(6, 6) << 
         1, t, 0, 0, 0, 0,
@@ -120,48 +120,62 @@ void HistogramHand::update(const cv::Mat & cam) {
 
     cv::cvtColor(cam, hsv, CV_BGR2HSV);
     cv::calcBackProject(&hsv, 1, chs, hist, bp, ranges);
-    cv::threshold(bp, bp, thresh_, 255, CV_THRESH_BINARY);
-    cv::morphologyEx(bp, bp, CV_MOP_CLOSE, closekernel);
 
-    binary = bp.clone();
+    cv::Rect rect(0, 0, 0, 0);
+    int area = 0;
 
-    cv::findContours(bp, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
+    cv::Mat temp;
 
-    /*for(auto it = contours.begin(); it != contours.end(); ++it)
-        cv::convexHull(*it, *it);*/
+    int s = 0;
+    int e = 255;
+    while (std::abs(s-e) > 1) {
+        cv::Rect rect_iter;
+        int area_iter;
 
-    cv::Point2f center_best;
-    float radius_best = -1;
+        double v = (s + e) / 2;
 
-    
+        cv::threshold(bp, binsearch, v, 255, CV_THRESH_BINARY);
+        cv::erode(binsearch, binsearch, closekernel);
+        cv::dilate(binsearch, binsearch, closekernel);
 
-    for(auto it = contours.begin(); it != contours.end(); ++it) {
-        cv::Point2f center;
-        float radius;
-        cv::minEnclosingCircle(*it, center, radius);
+        temp = binsearch.clone();
 
-        mask = cv::Scalar(0);
-        circle(mask, center, radius, cv::Scalar(255), CV_FILLED);
-        cv::bitwise_and(binary, mask, maskedbinary);
+        cv::Point maxl;
+        double maxv;
 
-        if (radius > radius_best && countNonZero(maskedbinary) > fillratio_ * countNonZero(mask)) {
-            radius_best = radius;
-            center_best = center;
+        cv::minMaxLoc(binsearch, NULL, &maxv, NULL, &maxl);
+
+        if (maxv == 0) {
+            e = v;
+            continue;
         }
-    }
-    
-    std::cout << "radius: " << radius_best << "\r" << std::flush;
 
-    if (radius_best > 0) {
+        area_iter = cv::floodFill(binsearch, maxl, cv::Scalar(0), &rect_iter, cv::Scalar(0), cv::Scalar(0), 8 | CV_FLOODFILL_FIXED_RANGE);
+
+        cv::minMaxLoc(binsearch, NULL, &maxv, NULL, &maxl);
+
+        if (maxv > 0) {
+            s = v;
+        } else {
+            e = v;
+            rect = rect_iter;
+            area = area_iter;
+        }
+
+        //std::cout << "S: " << s << " E: " << e << " V: " << v << "                \r" << std::flush;
+        //cv::imshow("thresh", temp);
+        //cv::waitKey(1000);
+    }
+
+    if (rect.height > 0 && rect.area() * fillratio_ < area) {
         //update the kalman filter
 
-        measurement.at<float>(0, 0) = center_best.x;
-        measurement.at<float>(1, 0) = center_best.y;
-        measurement.at<float>(2, 0) = radius_best;
+        measurement.at<float>(0, 0) = rect.x + rect.width / 2.0f;
+        measurement.at<float>(1, 0) = rect.y + rect.height / 2.0f;
+        measurement.at<float>(2, 0) = std::max(rect.height, rect.width) / 2.0f;
 
         kf.correct(measurement);
-    }
-    else {
+    } else {
         kf.statePost = kf.statePre.clone();
         kf.errorCovPost = kf.errorCovPre.clone();
     }
@@ -177,7 +191,8 @@ void HistogramHand::update(const cv::Mat & cam) {
     velocity_.y = prediction.at<float>(3, 0);
     velocity_.z = prediction.at<float>(5, 0);
 
-    imshow("binary", binary);
+    cv::imshow("thresh", temp);
+
 }
 
 const cv::Point3f & HistogramHand::position() const {
