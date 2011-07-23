@@ -22,7 +22,11 @@ int main(int argc, char * argv[]) {
 
     hh->calibrate(c);
 
-    ThreeDView view(1366, 768);
+    Tube tube;
+    tube.halfSize = cv::Size2f(2.4, 1.6);
+    tube.goal = 3;
+
+    ThreeDView view(1366, 768, tube);
     
     Balls balls;
     Ball b;
@@ -38,7 +42,7 @@ int main(int argc, char * argv[]) {
     b.velocity = cv::Point3f(1, -0.2f, 0);
     b.position = cv::Point3f(-.2f, 8.0f, .3f);
     balls.push_back(b);
-    GameUpdater game(cv::Size2f(2.4f, 1.6f));
+    GameUpdater game(tube);
     
     running = true;
     

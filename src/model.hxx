@@ -1,5 +1,10 @@
 #pragma once
 
+struct Tube {
+    cv::Size2f halfSize;
+    float goal, handMin, handMax;
+};
+
 enum BallOwner {
     ballOwnerLocal,
     ballOwnerRemote

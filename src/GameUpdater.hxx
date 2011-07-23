@@ -4,8 +4,8 @@
 
 class GameUpdater {
     public:
-        GameUpdater(cv::Size2f tubeDimsHalf);
+        GameUpdater(Tube tube);
         void tick(double dt, Balls & balls) const;
     private:
-        cv::Size2f tubeDimsHalf_;
+        Tube tube_;
 };

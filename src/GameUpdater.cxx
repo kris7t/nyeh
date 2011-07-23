@@ -1,11 +1,11 @@
 #include <GameUpdater.hxx>
 
-GameUpdater::GameUpdater(cv::Size2f tubeDimsHalf)
-    : tubeDimsHalf_(tubeDimsHalf) {
+GameUpdater::GameUpdater(Tube tube)
+    : tube_(tube) {
     
 }
 
-static void doCollosion(Ball & a, Ball & b) {
+static void doCollision(Ball & a, Ball & b) {
     cv::Point3f diff;
     diff.x = a.position.x - b.position.x;
     diff.y = a.position.y - b.position.y;
@@ -43,15 +43,15 @@ void GameUpdater::tick(double dt, Balls & balls) const {
         it->position.x += it->velocity.x * dt;
         it->position.y += it->velocity.y * dt;
         it->position.z += it->velocity.z * dt;
-        if (it->position.y < 3.0f) {
+        if (it->position.y < tube_.goal) {
             Balls::iterator del = it;
             --it;
             balls.erase(del);
         }
-        if (std::abs(it->position.x) >= tubeDimsHalf_.width) {
+        if (std::abs(it->position.x) >= tube_.halfSize.width) {
             it->velocity.x *= -1;
         }
-        if (std::abs(it->position.z) >= tubeDimsHalf_.height) {
+        if (std::abs(it->position.z) >= tube_.halfSize.height) {
             it->velocity.z *= -1;
         }
     }
@@ -60,7 +60,7 @@ void GameUpdater::tick(double dt, Balls & balls) const {
         for (Balls::iterator b = balls.begin();
                 b != a; ++b) {
             if (cv::norm(a->position - b->position) <= .25f) {
-                doCollosion(*a, *b);
+                doCollision(*a, *b);
             }
         }
     }

@@ -48,7 +48,7 @@ BallRenderer ballRenderers[] = {
     &renderCubeEnemy 
 };
 
-ThreeDView::ThreeDView(int width, int height) {
+ThreeDView::ThreeDView(int width, int height, Tube tube) : tube_(tube) {
     if (!glInited) {
         glewInit();
         glfwInit();
@@ -87,8 +87,8 @@ void ThreeDView::render(const Balls & balls, Hand_ hand) const {
     }
     
     cv::Point3f renderHand;
-    renderHand.x = (hand->position().x - 320) * 2.4 / 320;
-    renderHand.z = (hand->position().y - 240) * 1.6 / 240;
+    renderHand.x = (-hand->position().x + 320) * tube_.halfSize.width / 320;
+    renderHand.z = (-hand->position().y + 240) * tube_.halfSize.height / 240;
     renderHand.y = 8;
     renderCube(renderHand);
 }
