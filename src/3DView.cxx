@@ -122,12 +122,12 @@ ThreeDView::ThreeDView(cv::Size size, Tube tube) : tube_(tube) {
     if (!glfwOpenWindow(size.width, size.height, 8, 8, 8, 8, 32, 0, GLFW_FULLSCREEN)) {
         throw "Cannot open OpenGL window";
     }
-    
+
     glViewport(0, 0, size.width, size.height);
     glLoadIdentity();
     gluPerspective(45.0f, static_cast<float>(size.width) / size.height, 1.0f, 100.0f);
     gluLookAt(0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f);
-    
+
     glEnable(GL_LIGHTING);
     GLfloat ambient[] = { 0, 0, 0, 1 };
     glEnable(GL_LIGHT0);
@@ -148,16 +148,16 @@ ThreeDView::~ThreeDView() {
 
 void ThreeDView::render(const Balls & balls, const Hand_ hand) const {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    
+
     renderTube(tube_);
-    
+
     for (Balls::const_iterator it = balls.begin();
             it != balls.end(); ++it) {
-        ballRenderers[it->type](*it);
+        ballRenderers[it->second.type](it->second);
     }
-    
+
     cv::Point3f renderHand;
-    
+
     volatile const cv::Point3f & rawHand = hand->position();
     renderHand.x = (-rawHand.x + 320) * tube_.halfSize.width / 320;
     renderHand.z = (-rawHand.y + 240) * tube_.halfSize.height / 240;

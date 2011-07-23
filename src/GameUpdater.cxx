@@ -2,7 +2,7 @@
 
 GameUpdater::GameUpdater(Tube tube)
     : tube_(tube) {
-    
+
 }
 
 static void doCollision(Ball & a, Ball & b) {
@@ -35,29 +35,29 @@ static void doCollision(Ball & a, Ball & b) {
 void GameUpdater::tick(double dt, Balls & balls) const {
     for (Balls::iterator it = balls.begin();
             it != balls.end(); ++it) {
-        it->position.x += it->velocity.x * dt;
-        it->position.y += it->velocity.y * dt;
-        it->position.z += it->velocity.z * dt;
-        if (it->position.y < tube_.goal) {
+        it->second.position.x += it->second.velocity.x * dt;
+        it->second.position.y += it->second.velocity.y * dt;
+        it->second.position.z += it->second.velocity.z * dt;
+        if (it->second.position.y < tube_.goal) {
             Balls::iterator del = it;
             --it;
             balls.erase(del);
             std::cout << "\a" << std::flush;
             continue;
         }
-        if (std::abs(it->position.x) >= tube_.halfSize.width) {
-            it->velocity.x *= -1;
+        if (std::abs(it->second.position.x) >= tube_.halfSize.width) {
+            it->second.velocity.x *= -1;
         }
-        if (std::abs(it->position.z) >= tube_.halfSize.height) {
-            it->velocity.z *= -1;
+        if (std::abs(it->second.position.z) >= tube_.halfSize.height) {
+            it->second.velocity.z *= -1;
         }
     }
     for (Balls::iterator a = balls.begin();
             a != balls.end(); ++a) {
         for (Balls::iterator b = balls.begin();
                 b != a; ++b) {
-            if (cv::norm(a->position - b->position) <= .25f) {
-                doCollision(*a, *b);
+            if (cv::norm(a->second.position - b->second.position) <= .25f) {
+                doCollision(a->second, b->second);
             }
         }
     }

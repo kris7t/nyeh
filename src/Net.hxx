@@ -1,5 +1,7 @@
 #pragma once
 
+#define NOALIGN __attribute__((packed))
+
 typedef std::vector<char> CharVect;
 typedef std::tr1::shared_ptr<CharVect> Char_;
 class Packet {
@@ -27,7 +29,7 @@ private:
 class NetSocket;
 typedef std::tr1::shared_ptr<NetSocket> NetSocket_;
 
-class NetServer {
+class NetServer : boost::noncopyable {
 public:
     NetServer(int port);
     ~NetServer();
@@ -39,7 +41,7 @@ private:
 };
 
 
-class NetSocket {
+class NetSocket : boost::noncopyable {
 public:
     NetSocket(const std::string & host, int port);
     ~NetSocket();
@@ -57,4 +59,20 @@ private:
     size_t bufl, bufp, read, size;
     bool is_head;
     int id;
+};
+
+class NetConnection : boost::noncopyable {
+public:
+    NetConnection(int port); //server
+    NetConnection(const std::string & host, int port); // client
+    ~NetConnection();
+
+    NetSocket_ sock() {
+        if (!sock_) sock_ = srv->accept();
+        return sock_;
+    }
+
+private:
+    NetSocket_ sock_;
+    NetServer * srv;
 };

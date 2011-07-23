@@ -10,7 +10,7 @@ struct PacketHeader {
 
     uint8_t pid;
     uint64_t len;
-};
+} NOALIGN;
 
 PacketReader::PacketReader(int id) {
     readers()[id] = this;
@@ -88,11 +88,19 @@ Packet_ NetSocket::recv() {
             if (bufl < newsize) {
                 buf = static_cast<char *>(realloc(buf, newsize));
                 memcpy(buf+bufl, buf, std::min(bufp, newsize-bufl));
-                memcpy(buf, buf + newsize - bufl, newsize-bufl);
+                if (newsize - bufl < bufp)
+                    memcpy(buf, buf + newsize - bufl, bufp-(newsize-bufl));
 
                 // data before bufp
                 // |a1a2a3a4[p b1]b2b3b4|         bef
-                // |a3a4e0e1[p b1]b2b3b4[l a1]a2| aft
+                // |a1a2a3a4[p b1]b2b3b4[l e0]e1e2|
+                // |a1a2a3a4[p b1]b2b3b4[l a1]a2a3|
+                // |a4a2a3a4[p b1]b2b3b4[l a1]a2a3|
+                // |a4e0e1e2[p b1]b2b3b4[l a1]a2a3| aft
+
+                // |a1a2[p b1]b2|
+                // |a1a2[p b1]b2[l e1]e2e3e4e5|
+                // |a1a2[p b1]b2[l a1]a2e3e4e5|
 
                 bufl = read+ret;
             }
@@ -184,4 +192,12 @@ NetSocket_ NetServer::accept() const {
         throw std::string("accept fail");
     }
     return NetSocket_(new NetSocket(newfd));
+}
+
+//
+NetConnection::NetConnection(int port) : srv(new NetServer(port)) {}
+NetConnection::NetConnection(const std::string & host, int port)
+    : sock_(new NetSocket(host, port)), srv(NULL) {}
+NetConnection::~NetConnection() {
+    delete srv;
 }
