@@ -17,3 +17,8 @@ struct Ball {
 };
 
 typedef std::map<uint64_t, Ball> Balls;
+
+struct GameState {
+    uint8_t own_lives;
+    uint8_t opponent_lives;
+};

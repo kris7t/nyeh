@@ -20,7 +20,7 @@ endef
 obj/%.o: src/%.cxx src/pre.hxx.gch
 	$(compile) -include pre.hxx
 
-bin/nyeh.x: obj/main.o obj/Cam.o obj/HighguiCam.o obj/UvcCam.o obj/HistogramHand.o obj/3DView.o obj/GameUpdater.o obj/Net.o obj/NetCam.o obj/NetGame.o
+bin/nyeh.x: obj/main.o obj/Cam.o obj/HighguiCam.o obj/UvcCam.o obj/HistogramHand.o obj/3DView.o obj/GameUpdater.o obj/Net.o obj/NetCam.o obj/NetGame.o obj/ScoreRenderer.o
 	$(link)
 
 src/pre.hxx.gch: src/pre.hxx
