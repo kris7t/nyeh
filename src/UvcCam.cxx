@@ -79,11 +79,12 @@ UvcCam::UvcCam(int device) {
         }
     }
 
-    int type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-    if (v4l2_ioctl(fd, VIDIOC_STREAMON, &type)) {
-        destroy();
-        throw std::runtime_error("can't start capture");
-    }
+    v4l2_streamparm fps;
+    memset(&fps, 0, sizeof(v4l2_streamparm));
+    fps.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+    fps.parm.capture.timeperframe.numerator = 1;
+    fps.parm.capture.timeperframe.denominator = 25;
+    v4l2_ioctl(fd, VIDIOC_S_PARM, fps);
 
     v4l2_queryctrl ctrl;
     for (int i = V4L2_CID_PRIVATE_BASE;; ++i) {
@@ -105,6 +106,12 @@ UvcCam::UvcCam(int device) {
     CDISABLE(V4L2_CID_HUE_AUTO);
     CDISABLE(V4L2_CID_AUTOBRIGHTNESS);
 #undef CDISABLE
+
+    int type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+    if (v4l2_ioctl(fd, VIDIOC_STREAMON, &type)) {
+        destroy();
+        throw std::runtime_error("can't start capture");
+    }
 
     frame_.create(480, 640, CV_8UC3);
 }

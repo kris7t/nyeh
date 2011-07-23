@@ -15,7 +15,7 @@ public:
 private:
     cv::Mat jpeg_, frame_;
 
-	NetSocket sock;
+    NetSocket sock;
 };
 
 class NetServerCam {
