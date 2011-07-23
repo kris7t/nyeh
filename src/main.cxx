@@ -15,13 +15,13 @@ void camLoop(Cam_ c, Hand_ h) {
 }
 
 int main(int argc, char * argv[]) {
-    if (argc < 5) {
-        std::cout << "Usage: " << argv[0] << " <cam id> <threshold> <fill ratio> <dt>" << std::endl;
+    if (argc < 4) {
+        std::cout << "Usage: " << argv[0] << " <cam id> <fill ratio> <dt>" << std::endl;
         return -1;
     }
 
     Cam_ c = Cam::create(atoi(argv[1]));
-    Hand_ hh(new HistogramHand(atoi(argv[2]), atof(argv[3]), atof(argv[4])));
+    Hand_ hh(new HistogramHand(atof(argv[2]), atof(argv[3])));
 
     hh->calibrate(c);
 
