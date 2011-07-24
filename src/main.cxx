@@ -5,13 +5,15 @@
 #include "Hand.hxx"
 #include "HistogramHand.hxx"
 #include "NetGame.hxx"
+#include "HandToModel.hxx"
 
 bool running;
 
-void camLoop(Cam_ c, Hand_ h) {
+void camLoop(Cam_ c, Hand_ h, HandToModel_ htm) {
     do {
         c->grabImage();
         h->update(c->frame());
+        htm->update(h);
     } while (running);
 }
 
@@ -42,8 +44,11 @@ int main(int argc, char * argv[]) {
         tube.goal = 3;
         tube.separator = 13;
         tube.opponentGoal = 23;
+        tube.handMin = 2.9;
+        tube.handMax = 8;
 
         ThreeDView view(cv::Size(1366, 768), tube);
+        HandToModel_ htm = HandToModel::create(tube);
 
         GameState gs;
         gs.own_lives = 3;
@@ -68,11 +73,11 @@ int main(int argc, char * argv[]) {
 
         running = true;
 
-        boost::thread camThread(boost::bind(&camLoop, c, hh));
+        boost::thread camThread(boost::bind(&camLoop, c, hh, htm));
 
         do {
             glfwSetTime(0.0);
-            view.render(balls, hh, gs);
+            view.render(balls, htm, gs);
             glfwSwapBuffers();
             glfwSleep(0.01);
             game.tick(glfwGetTime(), balls, gs);

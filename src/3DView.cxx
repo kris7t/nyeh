@@ -153,7 +153,8 @@ ThreeDView::~ThreeDView() {
     glfwTerminate();
 }
 
-void ThreeDView::render(const Balls & balls, Hand_ hand, const GameState & state) const {
+void ThreeDView::render(const Balls & balls, HandToModel_ hand,
+        const GameState & state) const {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     renderTube(tube_);
@@ -163,11 +164,6 @@ void ThreeDView::render(const Balls & balls, Hand_ hand, const GameState & state
         ballRenderers[it->second.type](it->second);
     }
 
-    cv::Point3f renderHand;
-    volatile const cv::Point3f & rawHand = hand->position();
-    renderHand.x = (rawHand.x - 320) * tube_.halfSize.width / 320;
-    renderHand.z = (rawHand.y - 240) * tube_.halfSize.height / 240;
-    renderHand.y = 6;
-    renderCube(renderHand, 0.0f, 1.0f, 0.0f, 1.0f);
+    renderCube(hand->position(), 0.0f, 1.0f, 0.0f, 1.0f);
     scoreRenderer_.renderScore(state);
 }

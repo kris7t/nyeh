@@ -11,10 +11,10 @@ static const cv::Mat closekernel = (cv::Mat_<uchar>(cv::Size(5,5)) <<
     1, 1, 1, 1, 1,
     1, 1, 1, 1, 1,
     0, 1, 1, 1, 0);
-static const float sigma2_s = 10;
-static const float sigma2_r = 10;
+static const float sigma2_s = 5;
+static const float sigma2_r = 8;
 static const float sigma2_ms = 4;
-static const float sigma2_mr = 9;
+static const float sigma2_mr = 4;
 static const float L = 100;
 
 HistogramHand::HistogramHand(double fillratio, double t) : fillratio_(fillratio), kf(6, 3, 0), measurement(3, 1, CV_32FC1) {
@@ -61,8 +61,9 @@ HistogramHand::HistogramHand(double fillratio, double t) : fillratio_(fillratio)
     kf.errorCovPre = cv::Mat::eye(6, 6, CV_32F) * L;
 }
 
-void HistogramHand::measureHist(Cam_ cap, cv::MatND & hist, cv::Point center, int radius, bool accumulate) {
-    mask.create(cv::Size(640, 480), CV_8UC1);
+void HistogramHand::measureHist(Cam_ cap, cv::MatND & hist, cv::Point center,
+        int radius, bool accumulate) {
+    mask.create(cv::Size(320, 240), CV_8UC1);
     mask = cv::Scalar(0);
 
     cv::circle(mask, center, radius, cv::Scalar(255), CV_FILLED);
@@ -90,7 +91,8 @@ double HistogramHand::measureRadius(Cam_ cap) {
 
         cv::flip(cam, cam, 1);
         if (position_.z > 0) {
-            cv::circle(cam, cv::Point(position_.x, position_.y), position_.z, cv::Scalar(0, 30, 220), 2);
+            cv::circle(cam, cv::Point(position_.x, position_.y), position_.z,
+                    cv::Scalar(0, 30, 220), 2);
         }
 
         cv::imshow("Cam", cam);
@@ -103,18 +105,18 @@ void HistogramHand::calibrate(Cam_ cap) {
     cv::namedWindow("Cam");
 
     cv::displayOverlay("Cam", "Please move the ball into the circle and press enter.\n"
-                            " The better it fits, the better the results of the calibration are.", std::numeric_limits<int>::max());
+                            "The better it fits, the better the results of the calibration are.", 5000);
 
-    measureHist(cap, hist, cv::Point(320, 240), 60, false);
-    measureHist(cap, hist, cv::Point(120, 120), 60);
-    measureHist(cap, hist, cv::Point(520, 120), 60);
-    measureHist(cap, hist, cv::Point(520, 360), 60);
-    measureHist(cap, hist, cv::Point(120, 360), 60);
-    measureHist(cap, hist, cv::Point(320, 240), 20);
-    measureHist(cap, hist, cv::Point(120, 120), 20);
-    measureHist(cap, hist, cv::Point(520, 120), 20);
-    measureHist(cap, hist, cv::Point(520, 360), 20);
-    measureHist(cap, hist, cv::Point(120, 360), 20);
+    measureHist(cap, hist, cv::Point(160, 120), 30, false);
+    measureHist(cap, hist, cv::Point(60, 60), 30);
+    measureHist(cap, hist, cv::Point(260, 60), 30);
+    measureHist(cap, hist, cv::Point(260, 180), 30);
+    measureHist(cap, hist, cv::Point(60, 180), 30);
+    measureHist(cap, hist, cv::Point(160, 120), 10);
+    measureHist(cap, hist, cv::Point(60, 60), 10);
+    measureHist(cap, hist, cv::Point(260, 60), 10);
+    measureHist(cap, hist, cv::Point(260, 180), 10);
+    measureHist(cap, hist, cv::Point(60, 180), 10);
 
     double max = 0;
 
@@ -135,13 +137,15 @@ void HistogramHand::calibrate(Cam_ cap) {
         }
     }
 
-    cv::displayOverlay("Cam", "Please move the ball as far from the camera as you will during the game and press enter.\n"
-                            " Try to find a position where the ball is detected well.", std::numeric_limits<int>::max());
+    cv::displayOverlay("Cam", "Please move the ball as far from the camera as you will during the game and press enter.",
+            std::numeric_limits<int>::max());
     minRadius_ = measureRadius(cap);
 
-    cv::displayOverlay("Cam", "Please move the ball as close to the camera as you will during the game and press enter.\n"
-                            " Try to find a position where the ball is detected well.", std::numeric_limits<int>::max());
+    cv::displayOverlay("Cam", "Please move the ball as close to the camera as you will during the game and press enter.",
+            std::numeric_limits<int>::max());
     maxRadius_ = measureRadius(cap);
+
+    kappa_ = maxRadius_ / minRadius_ - 1.0;
 
     cvDestroyWindow("Cam");
 }
@@ -188,7 +192,8 @@ void HistogramHand::update(const cv::Mat & cam) {
             continue;
         }
 
-        area_iter = cv::floodFill(binsearch, maxl, cv::Scalar(0), &rect_iter, cv::Scalar(0), cv::Scalar(0), 8 | CV_FLOODFILL_FIXED_RANGE);
+        area_iter = cv::floodFill(binsearch, maxl, cv::Scalar(0), &rect_iter,
+                cv::Scalar(0), cv::Scalar(0), 8 | CV_FLOODFILL_FIXED_RANGE);
 
         if (findBlob(binsearch)) {
             s = v;
@@ -215,7 +220,7 @@ void HistogramHand::update(const cv::Mat & cam) {
     //make the kalman filter predict
     kf.predict();
 
-    position_.x = 639 - kf.statePost.at<float>(0, 0);
+    position_.x = 319 - kf.statePost.at<float>(0, 0);
     position_.y = kf.statePost.at<float>(2, 0);
     position_.z = kf.statePost.at<float>(4, 0);
 
@@ -224,18 +229,30 @@ void HistogramHand::update(const cv::Mat & cam) {
     velocity_.z = kf.statePost.at<float>(5, 0);
 }
 
-volatile const cv::Point3f & HistogramHand::position() volatile const {
-    return position_;
+cv::Point3f HistogramHand::position() volatile const {
+    cv::Point3f p;
+    p.x = position_.x;
+    p.y = position_.y;
+    p.z = position_.z;
+    return p;
 }
 
-volatile const cv::Point3f & HistogramHand::velocity() volatile const {
-    return velocity_;
+cv::Point3f HistogramHand::velocity() volatile const {
+    cv::Point3f p;
+    p.x = velocity_.x;
+    p.y = velocity_.y;
+    p.z = velocity_.z;
+    return p;
 }
 
-volatile const double & HistogramHand::minRadius() volatile const {
+double HistogramHand::minRadius() const {
     return minRadius_;
 }
 
-volatile const double & HistogramHand::maxRadius() volatile const {
+double HistogramHand::maxRadius() const {
     return maxRadius_;
+}
+
+double HistogramHand::kappa() const {
+    return kappa_;
 }

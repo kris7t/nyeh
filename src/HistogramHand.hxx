@@ -7,10 +7,11 @@ class HistogramHand : public Hand {
         HistogramHand(double fillratio, double t);
         virtual void calibrate(Cam_ cam);
         virtual void update(const cv::Mat & frame);
-        virtual volatile const cv::Point3f & position() volatile const;
-        virtual volatile const cv::Point3f & velocity() volatile const;
-        virtual volatile const double & minRadius() volatile const;
-        virtual volatile const double & maxRadius() volatile const;
+        virtual cv::Point3f position() volatile const;
+        virtual cv::Point3f velocity() volatile const;
+        virtual double minRadius() const;
+        virtual double maxRadius() const;
+        virtual double kappa() const;
 
     private:
         void measureHist(Cam_ cap, cv::MatND & hist, cv::Point center, int radius, bool accumulate = true);
@@ -18,8 +19,9 @@ class HistogramHand : public Hand {
 
         volatile cv::Point3f position_;
         volatile cv::Point3f velocity_;
-        volatile double minRadius_;
-        volatile double maxRadius_;
+        double minRadius_;
+        double maxRadius_;
+        double kappa_;
 
         std::vector<std::vector<cv::Point> > contours;
 

@@ -1,8 +1,8 @@
 #include "HighguiCam.hxx"
 
 HighguiCam::HighguiCam(int device) : cap_(device) {
-    cap_.set(CV_CAP_PROP_FRAME_WIDTH, 640);
-    cap_.set(CV_CAP_PROP_FRAME_HEIGHT, 480);
+    cap_.set(CV_CAP_PROP_FRAME_WIDTH, 320);
+    cap_.set(CV_CAP_PROP_FRAME_HEIGHT, 240);
     cap_.set(CV_CAP_PROP_FPS, 25);
     if (!cap_.isOpened())
         throw std::string("can't open device");
