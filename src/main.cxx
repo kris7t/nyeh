@@ -45,9 +45,9 @@ int main(int argc, char * argv[]) {
 
         ThreeDView view(cv::Size(1366, 768), tube);
 
-       GameState gs;
-       gs.own_lives = 3;
-       gs.opponent_lives = 2;
+        GameState gs;
+        gs.own_lives = 3;
+        gs.opponent_lives = 2;
 
         Balls balls;
         b.type = 0;
@@ -74,7 +74,8 @@ int main(int argc, char * argv[]) {
             glfwSetTime(0.0);
             view.render(balls, hh, gs);
             glfwSwapBuffers();
-            glfwSleep(0.01);
+            //glfwSleep(0.01);
+            cv::waitKey(10);
             game.tick(glfwGetTime(), balls);
             ng->sync(balls);
             running = !glfwGetKey(GLFW_KEY_ESC);
