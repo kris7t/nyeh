@@ -9,12 +9,17 @@ class HistogramHand : public Hand {
         virtual void update(const cv::Mat & frame);
         virtual volatile const cv::Point3f & position() volatile const;
         virtual volatile const cv::Point3f & velocity() volatile const;
+        virtual volatile const double & minRadius() volatile const;
+        virtual volatile const double & maxRadius() volatile const;
 
     private:
         void measureHist(Cam_ cap, cv::MatND & hist, cv::Point center, int radius, bool accumulate = true);
+        double measureRadius(Cam_ cap);
 
         volatile cv::Point3f position_;
         volatile cv::Point3f velocity_;
+        volatile double minRadius_;
+        volatile double maxRadius_;
 
         std::vector<std::vector<cv::Point> > contours;
 

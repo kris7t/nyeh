@@ -165,8 +165,8 @@ void ThreeDView::render(const Balls & balls, Hand_ hand, const GameState & state
 
     cv::Point3f renderHand;
     volatile const cv::Point3f & rawHand = hand->position();
-    renderHand.x = (-rawHand.x + 320) * tube_.halfSize.width / 320;
-    renderHand.z = (-rawHand.y + 240) * tube_.halfSize.height / 240;
+    renderHand.x = (rawHand.x - 320) * tube_.halfSize.width / 320;
+    renderHand.z = (rawHand.y - 240) * tube_.halfSize.height / 240;
     renderHand.y = 6;
     renderCube(renderHand, 0.0f, 1.0f, 0.0f, 1.0f);
     scoreRenderer_.renderScore(state);
