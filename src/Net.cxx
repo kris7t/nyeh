@@ -153,6 +153,7 @@ NetServer::NetServer(int port) {
     memset(&hints, 0, sizeof(addrinfo));
     hints.ai_family = AF_INET;
     hints.ai_socktype = SOCK_STREAM;
+    hints.ai_flags = AI_PASSIVE;
 
     if (getaddrinfo(NULL, boost::lexical_cast<std::string>(port).c_str(), &hints, &res))
         throw std::string("getaddrinfo");
