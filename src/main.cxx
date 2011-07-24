@@ -77,7 +77,7 @@ int main(int argc, char * argv[]) {
             //glfwSleep(0.01);
             cv::waitKey(10);
             game.tick(glfwGetTime(), balls);
-            ng->sync(balls);
+            ng->sync(balls, tube);
             running = !glfwGetKey(GLFW_KEY_ESC);
         } while (running);
 

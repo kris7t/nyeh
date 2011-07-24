@@ -43,11 +43,12 @@ struct GamePacketStruct {
         vz = betohf(vz);
     }
 
-    void apply(Balls & balls) {
+    void apply(Balls & balls, const Tube & tube) {
         Ball & b = balls[id];
         b.type = type;
-        b.position = cv::Point3f(px, py, pz);
-        b.velocity = cv::Point3f(vx, vy, vz);
+		float y = 2 * tube.separator - py;
+        b.position = cv::Point3f(-px, y, pz);
+        b.velocity = cv::Point3f(-vx, -vy, vz);
         b.owner = ballOwnerRemote;
     }
 
@@ -83,10 +84,10 @@ public:
         return ret;
     };
 
-    void apply(Balls & balls) {
+    void apply(Balls & balls, const Tube & tube) {
         for (std::vector<GamePacketStruct>::iterator it = data.begin();
              it != data.end(); ++it) {
-            it->apply(balls);
+            it->apply(balls, tube);
         }
     }
 
@@ -108,13 +109,13 @@ static GamePacketReader reader;
 NetGame::NetGame() : conn(14598) {}
 NetGame::NetGame(const std::string & host) : conn(host, 14598) {}
 
-void NetGame::sync(Balls & balls) {
+void NetGame::sync(Balls & balls, const Tube & tube) {
     NetSocket_ s = conn.sock();
     if (!s) return;
 
     s->send(GamePacket(balls));
 
     while (auto pk = std::tr1::dynamic_pointer_cast<GamePacket>(s->recv())) {
-        pk->apply(balls);
+        pk->apply(balls, tube);
     }
 }
