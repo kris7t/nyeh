@@ -45,24 +45,24 @@ int main(int argc, char * argv[]) {
 
         ThreeDView view(cv::Size(1366, 768), tube);
 
-       GameState gs;
-       gs.own_lives = 3;
-       gs.opponent_lives = 2;
+        GameState gs;
+        gs.own_lives = 3;
+        gs.opponent_lives = 2;
 
         Balls balls;
-        b.type = 0;
+        b.type = 1;
         b.velocity = cv::Point3f(0, -1, 0);
-        b.position = cv::Point3f(-2.0f, 8.0f, 2.0f);
+        b.position = cv::Point3f(-2.0f, 13.0f, 2.0f);
         balls[1] = b;
 
-        b.type = 0;
-        b.velocity = cv::Point3f(0, -0.02f, 1);
-        b.position = cv::Point3f(2.0f, 8.0f, 1.0f);
+        b.type = 1;
+        b.velocity = cv::Point3f(0, -1, 1);
+        b.position = cv::Point3f(2.0f, 13.0f, 1.0f);
         balls[2] = b;
 
         b.type = 0;
-        b.velocity = cv::Point3f(1, -0.02f, 0);
-        b.position = cv::Point3f(-.2f, 8.0f, .3f);
+        b.velocity = cv::Point3f(1, -1, 0);
+        b.position = cv::Point3f(-.2f, 13.0f, .3f);
         balls[3] = b;
         GameUpdater game(tube);
 
@@ -75,7 +75,7 @@ int main(int argc, char * argv[]) {
             view.render(balls, hh, gs);
             glfwSwapBuffers();
             glfwSleep(0.01);
-            game.tick(glfwGetTime(), balls);
+            game.tick(glfwGetTime(), balls, gs);
             ng->sync(balls);
             running = !glfwGetKey(GLFW_KEY_ESC);
         } while (running);

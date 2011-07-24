@@ -5,7 +5,7 @@
 class GameUpdater {
     public:
         GameUpdater(Tube tube);
-        void tick(double dt, Balls & balls) const;
+        void tick(double dt, Balls & balls, GameState & state) const;
     private:
         Tube tube_;
 };

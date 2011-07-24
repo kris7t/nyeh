@@ -106,8 +106,13 @@ static void renderCubeEnemy(const Ball & ball) {
     renderCube(ball.position, 1.0f, 1.0f, 0.0f, 1.0f);
 }
 
+static void renderCubeEnemyB(const Ball & ball) {
+    renderCube(ball.position, .8f, 0.0f, 0.0f, 1.0f);
+}
+
 BallRenderer ballRenderers[] = {
-    &renderCubeEnemy
+    &renderCubeEnemy,
+    &renderCubeEnemyB
 };
 
 ThreeDView::ThreeDView(cv::Size size, Tube tube) : tube_(tube) {

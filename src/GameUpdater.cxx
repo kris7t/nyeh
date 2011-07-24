@@ -1,5 +1,7 @@
 #include <GameUpdater.hxx>
 
+static const float eps = 1e-3;
+
 GameUpdater::GameUpdater(Tube tube)
     : tube_(tube) {
 
@@ -32,7 +34,7 @@ static void doCollision(Ball & a, Ball & b) {
     b.velocity.z += cz;
 }
 
-void GameUpdater::tick(double dt, Balls & balls) const {
+void GameUpdater::tick(double dt, Balls & balls, GameState & state) const {
     for (Balls::iterator it = balls.begin();
             it != balls.end(); ++it) {
         it->second.position.x += it->second.velocity.x * dt;
@@ -42,14 +44,21 @@ void GameUpdater::tick(double dt, Balls & balls) const {
             Balls::iterator del = it;
             --it;
             balls.erase(del);
+            if (state.own_lives) {
+                state.own_lives -= 1;
+            }
             std::cout << "\a" << std::flush;
             continue;
         }
         if (std::abs(it->second.position.x) >= tube_.halfSize.width) {
             it->second.velocity.x *= -1;
+            it->second.position.x = copysign(tube_.halfSize.width + eps,
+                    it->second.position.x);
         }
         if (std::abs(it->second.position.z) >= tube_.halfSize.height) {
             it->second.velocity.z *= -1;
+            it->second.position.z = copysign(tube_.halfSize.height + eps,
+                    it->second.position.z);
         }
     }
     for (Balls::iterator a = balls.begin();
