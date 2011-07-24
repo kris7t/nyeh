@@ -8,7 +8,7 @@ public:
     NetGame();
     NetGame(const std::string & host);
 
-    void sync(Balls & balls, const Tube & tube);
+    void sync(Balls & balls, GameState & state, const Tube & tube);
 
 private:
     NetConnection conn;

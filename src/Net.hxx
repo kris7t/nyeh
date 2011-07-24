@@ -26,6 +26,17 @@ private:
     static std::map<int, PacketReader *>& readers();
 };
 
+#define NET_READER(klass, pid)                  \
+    class klass##Reader : public PacketReader { \
+    public:                                     \
+        klass##Reader() : PacketReader(pid) {}  \
+        Packet_ read(const CharVect & ptr) {    \
+            return Packet_(new klass(ptr));     \
+        }                                       \
+    };                                          \
+                                                \
+    static klass##Reader __st_##klass##reader
+
 class NetSocket;
 typedef std::tr1::shared_ptr<NetSocket> NetSocket_;
 

@@ -16,15 +16,7 @@ public:
     cv::Mat jpeg;
 };
 
-class CamPacketReader : public PacketReader {
-public:
-    CamPacketReader() : PacketReader(0x10) {}
-    Packet_ read(const std::vector<char> & ptr) {
-        std::tr1::shared_ptr<CamPacket> p(new CamPacket(ptr));
-        return p;
-    };
-};
-static CamPacketReader reader;
+NET_READER(CamPacket, 0x10);
 
 // -----
 
