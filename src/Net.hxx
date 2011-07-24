@@ -48,6 +48,7 @@ public:
 
     Packet_ recv();
     void send(const Packet& pak);
+    bool isValid() const { return sock; }
 
     friend NetSocket_ NetServer::accept() const;
 private:
@@ -68,11 +69,16 @@ public:
     ~NetConnection();
 
     NetSocket_ sock() {
-        if (!sock_) sock_ = srv->accept();
+        if (!sock_ || !sock_->isValid()) reconnect();
         return sock_;
     }
 
 private:
+    void reconnect();
+
     NetSocket_ sock_;
     NetServer * srv;
+
+    const std::string host;
+    const int port;
 };

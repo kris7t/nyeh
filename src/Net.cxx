@@ -48,7 +48,7 @@ NetSocket::NetSocket(const std::string & host, int port)
 
     if (getaddrinfo(host.c_str(), boost::lexical_cast<std::string>(port).c_str(),
                     &hints, &res))
-        throw std::string("getaddrinfo");
+        throw std::runtime_error("getaddrinfo");
     p = res;
     for (;p; p = p->ai_next) {
         int fd = socket(p->ai_family, p->ai_socktype, p->ai_protocol);
@@ -60,7 +60,7 @@ NetSocket::NetSocket(const std::string & host, int port)
         sock = fd;
         return;
     }
-    throw std::string("no socket contactable");
+    throw std::runtime_error("no socket contactable");
 }
 
 NetSocket::NetSocket(int fd)
@@ -70,10 +70,12 @@ NetSocket::NetSocket(int fd)
 
 NetSocket::~NetSocket() {
     free(buf);
-    close(sock);
+    if (sock) close(sock);
 }
 
 Packet_ NetSocket::recv() {
+    if (!sock) return Packet_();
+
     char tbuf[4096];
     while (true) {
         errno = 0;
@@ -138,14 +140,21 @@ Packet_ NetSocket::recv() {
 }
 
 void NetSocket::send(const Packet& pak) {
+    if (!sock) return;
+
     PacketHeader hdr;
     hdr.pid = pak.pid();
     Char_ ptr = pak.write();
     hdr.len = ptr->size();
     hdr.toNet();
 
-    ::send(sock, &hdr, sizeof(PacketHeader), 0);
-    ::send(sock, &(*ptr)[0], ptr->size(), 0);
+    int ret = ::send(sock, &hdr, sizeof(PacketHeader), MSG_NOSIGNAL);
+    if (ret > 0) ret = ::send(sock, &(*ptr)[0], ptr->size(), MSG_NOSIGNAL);
+    if (ret == -1) {
+        std::cerr << "socket died" << std::endl;
+        close(sock);
+        sock = 0;
+    }
 }
 
 NetServer::NetServer(int port) {
@@ -196,9 +205,22 @@ NetSocket_ NetServer::accept() const {
 }
 
 //
-NetConnection::NetConnection(int port) : srv(new NetServer(port)) {}
+NetConnection::NetConnection(int port) : srv(new NetServer(port)), port(-1) {}
 NetConnection::NetConnection(const std::string & host, int port)
-    : sock_(new NetSocket(host, port)), srv(NULL) {}
+    : sock_(new NetSocket(host, port)), srv(NULL), host(host), port(port) {}
 NetConnection::~NetConnection() {
     delete srv;
+}
+
+void NetConnection::reconnect() {
+    if (srv) {
+        sock_ = srv->accept();
+    } else {
+        try {
+            sock_.reset(new NetSocket(host, port));
+        } catch (const std::exception & e) {
+            // ignore it
+            sock_.reset();
+        }
+    }
 }
