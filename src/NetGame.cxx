@@ -43,11 +43,12 @@ struct GamePacketStruct {
         vz = betohf(vz);
     }
 
-    void apply(Balls & balls) {
+    void apply(Balls & balls, const Tube & tube) {
         Ball & b = balls[id];
         b.type = type;
-        b.position = cv::Point3f(px, py, pz);
-        b.velocity = cv::Point3f(vx, vy, vz);
+		float y = 2 * tube.separator - py;
+        b.position = cv::Point3f(-px, y, pz);
+        b.velocity = cv::Point3f(-vx, -vy, vz);
         b.owner = ballOwnerRemote;
     }
 
@@ -83,10 +84,10 @@ public:
         return ret;
     };
 
-    void apply(Balls & balls) {
+    void apply(Balls & balls, const Tube & tube) {
         for (std::vector<GamePacketStruct>::iterator it = data.begin();
              it != data.end(); ++it) {
-            it->apply(balls);
+            it->apply(balls, tube);
         }
     }
 
@@ -94,27 +95,66 @@ private:
     std::vector<GamePacketStruct> data;
 };
 
-class GamePacketReader : public PacketReader {
-public:
-    GamePacketReader() : PacketReader(0x20) {}
-    Packet_ read(const CharVect & ptr) {
-        return Packet_(new GamePacket(ptr));
+NET_READER(GamePacket, 0x20);
+
+//
+
+struct GameStatePacketStruct {
+    GameStatePacketStruct(const GameState & state) : lives(state.own_lives) {}
+    GameStatePacketStruct(const void * ptr) {
+        memcpy(this, ptr, sizeof(GameStatePacketStruct));
+        fromNet();
     }
+
+    void toNet() {}
+    void fromNet() {}
+
+    void apply(GameState & gs) {
+        gs.opponent_lives = lives;
+    }
+
+    uint8_t lives;
+} NOALIGN;
+
+class GameStatePacket : public Packet {
+public:
+    GameStatePacket(const GameState & state) : struc(state) { struc.toNet(); }
+    GameStatePacket(const CharVect & ptr) : struc(&ptr[0]) {}
+
+    int pid() const { return 0x21; }
+    Char_ write() const {
+        Char_ ret(new CharVect(sizeof(GamePacketStruct)));
+        memcpy(&(*ret)[0], &struc, sizeof(GamePacketStruct));
+        return ret;
+    }
+
+    void apply(GameState & state) {
+        struc.apply(state);
+    }
+
+private:
+    GameStatePacketStruct struc;
 };
-static GamePacketReader reader;
+
+NET_READER(GameStatePacket, 0x21);
 
 //
 
 NetGame::NetGame() : conn(14598) {}
 NetGame::NetGame(const std::string & host) : conn(host, 14598) {}
 
-void NetGame::sync(Balls & balls) {
+void NetGame::sync(Balls & balls, GameState & state, const Tube & tube) {
     NetSocket_ s = conn.sock();
     if (!s) return;
 
     s->send(GamePacket(balls));
+    s->send(GameStatePacket(state));
 
-    while (auto pk = std::tr1::dynamic_pointer_cast<GamePacket>(s->recv())) {
-        pk->apply(balls);
+    while (auto pk = s->recv()) {
+        if (auto g = std::tr1::dynamic_pointer_cast<GamePacket>(pk)) {
+            g->apply(balls, tube);
+        } else if (auto gs = std::tr1::dynamic_pointer_cast<GameStatePacket>(pk)) {
+            gs->apply(state);
+        }
     }
 }

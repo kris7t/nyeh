@@ -81,7 +81,7 @@ int main(int argc, char * argv[]) {
             glfwSwapBuffers();
             glfwSleep(0.01);
             game.tick(glfwGetTime(), balls, gs);
-            ng->sync(balls);
+            ng->sync(balls, gs, tube);
             running = !glfwGetKey(GLFW_KEY_ESC);
         } while (running);
 

@@ -26,6 +26,17 @@ private:
     static std::map<int, PacketReader *>& readers();
 };
 
+#define NET_READER(klass, pid)                  \
+    class klass##Reader : public PacketReader { \
+    public:                                     \
+        klass##Reader() : PacketReader(pid) {}  \
+        Packet_ read(const CharVect & ptr) {    \
+            return Packet_(new klass(ptr));     \
+        }                                       \
+    };                                          \
+                                                \
+    static klass##Reader __st_##klass##reader
+
 class NetSocket;
 typedef std::tr1::shared_ptr<NetSocket> NetSocket_;
 
@@ -48,6 +59,7 @@ public:
 
     Packet_ recv();
     void send(const Packet& pak);
+    bool isValid() const { return sock; }
 
     friend NetSocket_ NetServer::accept() const;
 private:
@@ -68,11 +80,16 @@ public:
     ~NetConnection();
 
     NetSocket_ sock() {
-        if (!sock_) sock_ = srv->accept();
+        if (!sock_ || !sock_->isValid()) reconnect();
         return sock_;
     }
 
 private:
+    void reconnect();
+
     NetSocket_ sock_;
     NetServer * srv;
+
+    const std::string host;
+    const int port;
 };
