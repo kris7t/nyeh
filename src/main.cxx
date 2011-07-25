@@ -28,15 +28,15 @@ int main(int argc, char * argv[]) {
 
         NetGame_ ng;
         NetCam_ nc;
-        Ball b;
+        int balloff;
         if (argc < 5) {
             ng.reset(new NetGame());
             nc.reset(new NetCam());
-            b.owner = ballOwnerLocal;
+            balloff = 0;
         } else {
             ng.reset(new NetGame(argv[4]));
             nc.reset(new NetCam(argv[4]));
-            b.owner = ballOwnerRemote;
+            balloff = 0xffff;
         }
 
         Cam_ c = Cam::create(atoi(argv[1]));
@@ -61,24 +61,28 @@ int main(int argc, char * argv[]) {
         gs.opponent_lives = 2;
 
         Balls balls;
+
+        Ball b;
+        b.owner = ballOwnerLocal;
         b.type = 1;
         b.velocity = cv::Point3f(0, -1, 0);
         b.position = cv::Point3f(-2.0f, 13.0f, 2.0f);
-        balls[1] = b;
+        balls[balloff+1] = b;
 
         b.type = 1;
         b.velocity = cv::Point3f(0, -1, 1);
         b.position = cv::Point3f(2.0f, 13.0f, 1.0f);
-        balls[2] = b;
+        balls[balloff+2] = b;
 
         b.type = 0;
         b.velocity = cv::Point3f(1, -1, 0);
         for (int j = 0; j < 3; ++j) {
-            for (int i = 0; i < 9; ++i) {
+            for (int i = 0; i < 3; ++i) {
                 b.position = cv::Point3f(-1.6 + 0.5f * i, 13.0f, -1.2f + 0.5f * j);
-                balls[3 + j * 20 + i] = b;
+                balls[balloff + 3 + j * 20 + i] = b;
             }
         }
+
         GameUpdater game(tube);
 
         running = true;

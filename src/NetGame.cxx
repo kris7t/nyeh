@@ -44,9 +44,9 @@ struct GamePacketStruct {
     }
 
     void apply(Balls & balls, const Tube & tube) {
+        float y = 2 * tube.separator - py;
         Ball & b = balls[id];
         b.type = type;
-		float y = 2 * tube.separator - py;
         b.position = cv::Point3f(-px, y, pz);
         b.velocity = cv::Point3f(-vx, -vy, vz);
         b.owner = ballOwnerRemote;

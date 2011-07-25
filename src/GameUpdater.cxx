@@ -70,8 +70,12 @@ void GameUpdater::tick(double dt, Balls & balls, GameState & state, HandToModel_
         it->second.position.x += it->second.velocity.x * dt;
         it->second.position.y += it->second.velocity.y * dt;
         it->second.position.z += it->second.velocity.z * dt;
-        if (it->second.owner != ballOwnerLocal) {
-            continue;
+        if (it->second.owner == ballOwnerRemote) {
+            if (it->second.position.y < tube_.separator + eps) {
+                it->second.owner = ballOwnerLocal;
+            } else {
+                continue;
+            }
         }
         if (it->second.position.y < tube_.goal) {
             randomizeBall(it->second);
@@ -81,7 +85,7 @@ void GameUpdater::tick(double dt, Balls & balls, GameState & state, HandToModel_
             std::cout << "\a" << std::flush;
             continue;
         }
-        if (cv::norm(it->second.position -  hand->position()) <= .55f) {
+        if (cv::norm(it->second.position - hand->position()) <= .55f) {
             doCollision(it->second, hand);
         }
         if (std::abs(it->second.position.x) >= tube_.halfSize.width) {
@@ -95,9 +99,6 @@ void GameUpdater::tick(double dt, Balls & balls, GameState & state, HandToModel_
                     it->second.position.z);
             it->second.position.z = copysign(tube_.halfSize.height - eps,
                     it->second.position.z);
-        }
-        if (it->second.position.y > tube_.separator + eps) {
-            it->second.owner = ballOwnerRemote;
         }
     }
     for (Balls::iterator a = balls.begin();
@@ -122,4 +123,5 @@ void GameUpdater::randomizeBall(Ball & ball) {
         * tube_.halfSize.height;
     ball.position.y = tube_.separator - eps
         - static_cast<float>(rand_r(&seed_)) / RAND_MAX * tube_.spawnArea;
+    ball.velocity = cv::Point3f(0, -1, 0);
 }
