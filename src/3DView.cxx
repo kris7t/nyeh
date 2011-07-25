@@ -115,7 +115,8 @@ BallRenderer ballRenderers[] = {
     &renderCubeEnemyB
 };
 
-ThreeDView::ThreeDView(cv::Size size, Tube tube) : tube_(tube), camRenderer_(tube) {
+ThreeDView::ThreeDView(cv::Size size, Tube tube)
+    : tube_(tube), hudRenderer_(tube_, size), camRenderer_(tube) {
     if (!glInited) {
         glewInit();
         glfwInit();
@@ -147,16 +148,18 @@ ThreeDView::ThreeDView(cv::Size size, Tube tube) : tube_(tube), camRenderer_(tub
     glClearColor(.39f, .58f, .93f, 1.0f);
 
     camRenderer_.init();
-    scoreRenderer_ = ScoreRenderer(tube_, size);
+    hudRenderer_.init();
 }
 
 ThreeDView::~ThreeDView() {
     camRenderer_.dispose();
+    hudRenderer_.dispose();
     glfwTerminate();
 }
 
 void ThreeDView::render(const Balls & balls, HandToModel_ hand,
-        const GameState & state, const cv::Mat & frame) {
+                        const GameState & state, const cv::Mat & frame,
+                        const cv::Mat & ownframe) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     camRenderer_.upload(frame);
@@ -170,5 +173,6 @@ void ThreeDView::render(const Balls & balls, HandToModel_ hand,
 
     renderCube(hand->position(), .25f, 0.0f, 1.0f, 0.0f, 1.0f);
     camRenderer_.render(true, true);
-    scoreRenderer_.renderScore(state);
+    hudRenderer_.upload(ownframe);
+    hudRenderer_.renderScore(state);
 }
