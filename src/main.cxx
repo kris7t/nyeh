@@ -5,13 +5,15 @@
 #include "Hand.hxx"
 #include "HistogramHand.hxx"
 #include "NetGame.hxx"
+#include "NetCam.hxx"
 #include "HandToModel.hxx"
 
 bool running;
 
-void camLoop(Cam_ c, Hand_ h, HandToModel_ htm) {
+void camLoop(Cam_ c, NetCam * nc, Hand_ h, HandToModel_ htm) {
     do {
         c->grabImage();
+        nc->push(c->jpeg());
         h->update(c->frame());
         htm->update(h);
     } while (running);
@@ -25,12 +27,15 @@ int main(int argc, char * argv[]) {
         }
 
         NetGame * ng;
+        NetCam * nc;
         Ball b;
         if (argc < 5) {
             ng = new NetGame();
+            nc = new NetCam();
             b.owner = ballOwnerLocal;
         } else {
             ng = new NetGame(argv[4]);
+            nc = new NetCam(argv[4]);
             b.owner = ballOwnerRemote;
         }
 
@@ -73,17 +78,22 @@ int main(int argc, char * argv[]) {
 
         running = true;
 
-        boost::thread camThread(boost::bind(&camLoop, c, hh, htm));
+        boost::thread camThread(boost::bind(&camLoop, c, nc, hh, htm));
 
         do {
+            ng->sync(balls, gs, tube);
+            nc->grabImage();
+
             glfwSetTime(0.0);
-            view.render(balls, htm, gs);
+            view.render(balls, htm, gs, nc->frame());
             glfwSwapBuffers();
             glfwSleep(0.01);
             game.tick(glfwGetTime(), balls, gs);
-            ng->sync(balls, gs, tube);
             running = !glfwGetKey(GLFW_KEY_ESC);
         } while (running);
+
+        delete ng;
+        delete nc;
 
         return 0;
     } catch (const std::string& str) {

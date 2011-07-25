@@ -2,8 +2,7 @@
 
 #define NOALIGN __attribute__((packed))
 
-typedef std::vector<char> CharVect;
-typedef std::tr1::shared_ptr<CharVect> Char_;
+typedef std::tr1::shared_ptr<std::string> Char_;
 class Packet {
 public:
     virtual ~Packet() {}
@@ -18,7 +17,7 @@ public:
     PacketReader(int id);
     virtual ~PacketReader() {}
 
-    virtual Packet_ read(const std::vector<char> & ptr) = 0;
+    virtual Packet_ read(const std::string & ptr) = 0;
 
     static PacketReader& get(int id);
 
@@ -30,7 +29,7 @@ private:
     class klass##Reader : public PacketReader { \
     public:                                     \
         klass##Reader() : PacketReader(pid) {}  \
-        Packet_ read(const CharVect & ptr) {    \
+        Packet_ read(const std::string & ptr) { \
             return Packet_(new klass(ptr));     \
         }                                       \
     };                                          \
@@ -71,6 +70,7 @@ private:
     size_t bufl, bufp, read, size;
     bool is_head;
     int id;
+    uint64_t hash;
 };
 
 class NetConnection : boost::noncopyable {

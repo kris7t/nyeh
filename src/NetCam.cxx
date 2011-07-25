@@ -2,14 +2,14 @@
 
 class CamPacket : public Packet {
 public:
-    CamPacket(const std::vector<char> & ptr) : jpeg(ptr, true) {}
+    CamPacket(const std::string & ptr) : jpeg(ptr.size(), 1, CV_8U) {
+        memcpy(jpeg.data, ptr.data(), ptr.size());
+    }
     CamPacket(const cv::Mat & jpeg) : jpeg(jpeg) {}
 
     int pid() const { return 0x10; }
     Char_ write() const {
-        Char_ ret(new CharVect());
-        ret->resize(jpeg.rows);
-        memcpy(&(*ret)[0], jpeg.ptr(0), jpeg.rows);
+        Char_ ret(new std::string(reinterpret_cast<const char *>(jpeg.ptr(0)), jpeg.rows));
         return ret;
     }
 
