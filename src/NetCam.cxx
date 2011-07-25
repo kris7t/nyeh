@@ -21,10 +21,10 @@ NET_READER(CamPacket, 0x10);
 // -----
 
 NetCam::NetCam() : conn(14599) {
-	frame_.create(480, 640, CV_8UC3);
+	frame_.create(240, 320, CV_8UC3);
 }
 NetCam::NetCam(const std::string & host) : conn(host, 14599) {
-	frame_.create(480, 640, CV_8UC3);
+	frame_.create(240, 320, CV_8UC3);
 }
 
 void NetCam::grabImage() {
