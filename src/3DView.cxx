@@ -105,11 +105,11 @@ ThreeDView::ThreeDView(cv::Size size, Tube tube)
     glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, GL_TRUE);
 
     glEnable(GL_LIGHT1);
-    pos = {1, 0, 1, 0};
+    pos[0] = 1, pos[1] = 0, pos[2] = 1, pos[3] = 0;
     glLightfv(GL_LIGHT1, GL_POSITION, pos);
-    spec = { 0.0f, 0.0f, 0.0f, 1.0f };
+    spec[0] = 0.0f, spec[1] = 0.0f, spec[2] = 0.0f, spec[3] = 1.0f;
     glLightfv(GL_LIGHT1, GL_SPECULAR, spec);
-    diff = { 0.3f, 0.3f, 0.3f, 1};
+    diff[0] = .3f, diff[1] = .3f, diff[2] = .3f, diff[3] = 1.0f;
     glLightfv(GL_LIGHT1, GL_DIFFUSE, diff);
 
     glEnable(GL_DEPTH_TEST);

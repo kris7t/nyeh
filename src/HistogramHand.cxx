@@ -12,7 +12,7 @@ static const cv::Mat closekernel = (cv::Mat_<uchar>(cv::Size(5,5)) <<
     1, 1, 1, 1, 1,
     0, 1, 1, 1, 0);
 static const float sigma2_s = 5;
-static const float sigma2_r = 2;
+static const float sigma2_r = 5;
 static const float sigma2_ms = .1;
 static const float sigma2_mr = .1;
 static const float L = 100;

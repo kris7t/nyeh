@@ -73,8 +73,12 @@ int main(int argc, char * argv[]) {
 
         b.type = 0;
         b.velocity = cv::Point3f(1, -1, 0);
-        b.position = cv::Point3f(-.2f, 13.0f, .3f);
-        balls[3] = b;
+        for (int j = 0; j < 3; ++j) {
+            for (int i = 0; i < 9; ++i) {
+                b.position = cv::Point3f(-1.6 + 0.5f * i, 13.0f, -1.2f + 0.5f * j);
+                balls[3 + j * 20 + i] = b;
+            }
+        }
         GameUpdater game(tube);
 
         running = true;
