@@ -37,82 +37,33 @@ static void renderTube(const Tube & tube) {
     glEnable(GL_DEPTH_TEST);
 }
 
-static void renderCube(cv::Point3f pos, float size,  float r, float g, float b, float a) {
-    GLfloat diffuse[] = { r, g, b, a };
+static void renderSphere(const cv::Point3f pos, float size, float r, float g, float b) {
+    static GLUquadric * q = gluNewQuadric();
+
+    GLfloat diffuse[] = { r, g, b, 1.0f };
     glMaterialfv(GL_FRONT, GL_DIFFUSE, diffuse);
+    GLfloat amb[] = {r,g,b, 1};
+    glMaterialfv(GL_FRONT, GL_AMBIENT, amb);
+    //glMaterialfv(GL_FRONT, GL_SPECULAR, amb);
 
     glPushMatrix();
     glTranslatef(pos.x, pos.y, pos.z);
-    glColor4f(r, g, b, a);
-    glBegin(GL_QUADS);
-    glNormal3f(0, -1, 0);
-    glVertex3f(-size, size, size);
-    glNormal3f(0, -1, 0);
-    glVertex3f(size, size, size);
-    glNormal3f(0, -1, 0);
-    glVertex3f(size, size, -size);
-    glNormal3f(0, -1, 0);
-    glVertex3f(-size, size, -size);
 
-    glNormal3f(0, 1, 0);
-    glVertex3f(size, -size, size);
-    glNormal3f(0, 1, 0);
-    glVertex3f(-size, -size, size);
-    glNormal3f(0, 1, 0);
-    glVertex3f(-size, -size, -size);
-    glNormal3f(0, 1, 0);
-    glVertex3f(size, -size, -size);
-
-    glNormal3f(0, 0, -1);
-    glVertex3f(size, -size, size);
-    glNormal3f(0, 0, -1);
-    glVertex3f(size, size, size);
-    glNormal3f(0, 0, -1);
-    glVertex3f(-size, size, size);
-    glNormal3f(0, 0, -1);
-    glVertex3f(-size, -size, size);
-
-    glNormal3f(1, 0, 0);
-    glVertex3f(-size, -size, size);
-    glNormal3f(1, 0, 0);
-    glVertex3f(-size, size, size);
-    glNormal3f(1, 0, 0);
-    glVertex3f(-size, size, -size);
-    glNormal3f(1, 0, 0);
-    glVertex3f(-size, -size, -size);
-
-    glNormal3f(-1, 0, 0);
-    glVertex3f(size, -size, -size);
-    glNormal3f(-1, 0, 0);
-    glVertex3f(size, size, -size);
-    glNormal3f(-1, 0, 0);
-    glVertex3f(size, size, size);
-    glNormal3f(-1, 0, 0);
-    glVertex3f(size, -size, size);
-
-    glNormal3f(0, 0, 1);
-    glVertex3f(size, size, -size);
-    glNormal3f(0, 0, 1);
-    glVertex3f(size, -size, -size);
-    glNormal3f(0, 0, 1);
-    glVertex3f(-size, -size, -size);
-    glNormal3f(0, 0, 1);
-    glVertex3f(-size, size, -size);
-    glEnd();
+    gluSphere(q, size, 10, 8);
     glPopMatrix();
 }
 
-static void renderCubeEnemy(const Ball & ball) {
-    renderCube(ball.position, .1f, 1.0f, 1.0f, 0.0f, 1.0f);
+static void renderSphereEnemy(const Ball & ball) {
+    renderSphere(ball.position, .1f, 1,1,0);
 }
 
-static void renderCubeEnemyB(const Ball & ball) {
-    renderCube(ball.position, .1f, .8f, 0.0f, 0.0f, 1.0f);
+static void renderSphereEnemyB(const Ball & ball) {
+    renderSphere(ball.position, .1f, .8f,0,0);
 }
 
 BallRenderer ballRenderers[] = {
-    &renderCubeEnemy,
-    &renderCubeEnemyB
+    &renderSphereEnemy,
+    &renderSphereEnemyB
 };
 
 ThreeDView::ThreeDView(cv::Size size, Tube tube)
@@ -130,14 +81,36 @@ ThreeDView::ThreeDView(cv::Size size, Tube tube)
     }
 
     glViewport(0, 0, size.width, size.height);
+    glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     gluPerspective(45.0f, static_cast<float>(size.width) / size.height, 1.0f, 100.0f);
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
     gluLookAt(0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f);
 
     glEnable(GL_LIGHTING);
-    GLfloat ambient[] = { 0, 0, 0, 1 };
     glEnable(GL_LIGHT0);
-    glLightfv(GL_LIGHT0, GL_AMBIENT, ambient);
+
+    GLfloat pos[] = {-2, 0, 2, 1}; //{-tube_.halfSize.width, 0, tube_.halfSize.height, 1};
+    glLightfv(GL_LIGHT0, GL_POSITION, pos);
+    GLfloat spec[] = {0.2f,0.2f,0.2f,1};
+    glLightfv(GL_LIGHT0, GL_SPECULAR, spec);
+    GLfloat diff[] = {1,1,1,1};
+    glLightfv(GL_LIGHT0, GL_DIFFUSE, diff);
+    glLightf(GL_LIGHT0, GL_CONSTANT_ATTENUATION, 1.0f);
+    glLightf(GL_LIGHT0, GL_LINEAR_ATTENUATION, 0.0f);
+    glLightf(GL_LIGHT0, GL_QUADRATIC_ATTENUATION, 0.005f);
+    GLfloat gamb[] = { 0.1f, 0.1f, 0.1f, 1};
+    glLightModelfv(GL_LIGHT_MODEL_AMBIENT, gamb);
+    glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, GL_TRUE);
+
+    glEnable(GL_LIGHT1);
+    pos = {1, 0, 1, 0};
+    glLightfv(GL_LIGHT1, GL_POSITION, pos);
+    spec = { 0.0f, 0.0f, 0.0f, 1.0f };
+    glLightfv(GL_LIGHT1, GL_SPECULAR, spec);
+    diff = { 0.3f, 0.3f, 0.3f, 1};
+    glLightfv(GL_LIGHT1, GL_DIFFUSE, diff);
 
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LEQUAL);
@@ -171,7 +144,7 @@ void ThreeDView::render(const Balls & balls, HandToModel_ hand,
         ballRenderers[it->second.type](it->second);
     }
 
-    renderCube(hand->position(), .25f, 0.0f, 1.0f, 0.0f, 1.0f);
+    renderSphere(hand->position(), .25f, 0.0f, 1.0f, 0.0f);
     camRenderer_.render(true, true);
     hudRenderer_.upload(ownframe);
     hudRenderer_.renderScore(state);
