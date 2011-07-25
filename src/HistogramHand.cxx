@@ -12,9 +12,9 @@ static const cv::Mat closekernel = (cv::Mat_<uchar>(cv::Size(5,5)) <<
     1, 1, 1, 1, 1,
     0, 1, 1, 1, 0);
 static const float sigma2_s = 5;
-static const float sigma2_r = 8;
-static const float sigma2_ms = 4;
-static const float sigma2_mr = 4;
+static const float sigma2_r = 2;
+static const float sigma2_ms = .1;
+static const float sigma2_mr = .1;
 static const float L = 100;
 
 HistogramHand::HistogramHand(double fillratio, double t) : fillratio_(fillratio), kf(6, 3, 0), measurement(3, 1, CV_32FC1) {
@@ -112,11 +112,11 @@ void HistogramHand::calibrate(Cam_ cap) {
     measureHist(cap, hist, cv::Point(260, 60), 30);
     measureHist(cap, hist, cv::Point(260, 180), 30);
     measureHist(cap, hist, cv::Point(60, 180), 30);
-    measureHist(cap, hist, cv::Point(160, 120), 10);
+    /*measureHist(cap, hist, cv::Point(160, 120), 10);
     measureHist(cap, hist, cv::Point(60, 60), 10);
     measureHist(cap, hist, cv::Point(260, 60), 10);
     measureHist(cap, hist, cv::Point(260, 180), 10);
-    measureHist(cap, hist, cv::Point(60, 180), 10);
+    measureHist(cap, hist, cv::Point(60, 180), 10);*/
 
     double max = 0;
 

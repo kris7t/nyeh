@@ -89,7 +89,7 @@ int main(int argc, char * argv[]) {
             view.render(balls, htm, gs, nc->frame());
             glfwSwapBuffers();
             glfwSleep(0.01);
-            game.tick(glfwGetTime(), balls, gs);
+            game.tick(glfwGetTime(), balls, gs, htm);
             running = !glfwGetKey(GLFW_KEY_ESC);
         } while (running);
 
