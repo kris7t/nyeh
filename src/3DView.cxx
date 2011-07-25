@@ -8,7 +8,7 @@ static void renderFrame(GLuint texid, const cv::Mat & frame, const Tube & tube) 
     glBindTexture(GL_TEXTURE_2D, texid);
     glColor4f(1, 1, 1, 1);
 
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, frame.cols, frame.rows, 0, GL_RGB,
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, frame.cols, frame.rows, 0, GL_BGR,
                  GL_UNSIGNED_BYTE, frame.ptr(0));
     glBegin(GL_QUADS);
         glTexCoord2f(0, 1);

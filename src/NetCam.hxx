@@ -19,3 +19,4 @@ private:
 
     NetConnection conn;
 };
+typedef std::tr1::shared_ptr<NetCam> NetCam_;

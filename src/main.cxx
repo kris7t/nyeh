@@ -10,7 +10,7 @@
 
 volatile bool running;
 
-void camLoop(Cam_ c, NetCam * nc, Hand_ h, HandToModel_ htm) {
+void camLoop(Cam_ c, NetCam_ nc, Hand_ h, HandToModel_ htm) {
     do {
         c->grabImage();
         nc->push(c->jpeg());
@@ -26,16 +26,16 @@ int main(int argc, char * argv[]) {
             return -1;
         }
 
-        NetGame * ng;
-        NetCam * nc;
+        NetGame_ ng;
+        NetCam_ nc;
         Ball b;
         if (argc < 5) {
-            ng = new NetGame();
-            nc = new NetCam();
+            ng.reset(new NetGame());
+            nc.reset(new NetCam());
             b.owner = ballOwnerLocal;
         } else {
-            ng = new NetGame(argv[4]);
-            nc = new NetCam(argv[4]);
+            ng.reset(new NetGame(argv[4]));
+            nc.reset(new NetCam(argv[4]));
             b.owner = ballOwnerRemote;
         }
 
@@ -93,9 +93,7 @@ int main(int argc, char * argv[]) {
             running = !glfwGetKey(GLFW_KEY_ESC);
         } while (running);
 
-        delete ng;
-        delete nc;
-
+        camThread.join();
         return 0;
     } catch (const std::string& str) {
         std::cerr << "exception: " << str << std::endl;
