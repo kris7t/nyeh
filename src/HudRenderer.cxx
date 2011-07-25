@@ -83,10 +83,10 @@ void HudRenderer::renderScore(const GameState & state) const {
     glBindTexture(GL_TEXTURE_2D, texture_[1]);
     glColor4f(1, 1, 1, 0.9f);
     glBegin(GL_QUADS);
-    glTexCoord2f(0, 1); glVertex2f(size_.width - imgsize_.width, size_.height);
-    glTexCoord2f(1, 1); glVertex2f(size_.width, size_.height);
-    glTexCoord2f(1, 0); glVertex2f(size_.width, size_.height - imgsize_.height);
-    glTexCoord2f(0, 0); glVertex2f(size_.width - imgsize_.width, size_.height - imgsize_.height);
+    glTexCoord2f(1, 1); glVertex2f(size_.width - imgsize_.width, size_.height);
+    glTexCoord2f(0, 1); glVertex2f(size_.width, size_.height);
+    glTexCoord2f(0, 0); glVertex2f(size_.width, size_.height - imgsize_.height);
+    glTexCoord2f(1, 0); glVertex2f(size_.width - imgsize_.width, size_.height - imgsize_.height);
     glEnd();
 
     glPopMatrix();
