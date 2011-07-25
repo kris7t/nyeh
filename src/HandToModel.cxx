@@ -11,18 +11,19 @@ void HandToModel::update(Hand_ hand) {
     cv::Point3f pos = hand->position();
     cv::Point3f vel = hand->velocity();
     position_.x = std::min(std::max((pos.x / 160 - 1), -1.f), 1.f) * tube_.halfSize.width;
-    position_.z = -std::min(std::max((pos.y / 120 - 1), -1.f), 1.f) * tube_.halfSize.height; 
+    position_.z = -std::min(std::max((pos.y / 120 - 1), -1.f), 1.f) * tube_.halfSize.height;
     if (pos.z < hand->minRadius()) {
-        position_.y = tube_.handMin;
+        position_.y = tube_.handMax - tube_.handMovement;
     } else if (pos.z > hand->maxRadius()) {
         position_.y = tube_.handMax;
     } else {
         double lambda = (hand->maxRadius() / pos.z - 1.0) / hand->kappa();
-        position_.y = tube_.handMax + (tube_.handMin - tube_.handMax) * lambda;
+        position_.y = tube_.handMax - tube_.handMovement * lambda;
     }
     velocity_.x = vel.x / 160 * tube_.halfSize.width;
     velocity_.z = -vel.y / 120 * tube_.halfSize.height;
-    velocity_.y = 0;
+    double phi = hand->maxRadius() * tube_.handMovement / hand->kappa();
+    velocity_.y = phi / (pos.z * pos.z) * vel.z;
 }
 
 cv::Point3f HandToModel::position() volatile const {

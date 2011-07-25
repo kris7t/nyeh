@@ -1,7 +1,8 @@
-#ifndef __PRE_HXh
+#ifndef __PRE_HXX
 #define __PRE_HXX
 
 #include <cctype>
+#include <ctime>
 
 #include <iostream>
 #include <vector>

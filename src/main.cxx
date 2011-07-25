@@ -7,7 +7,7 @@
 #include "NetGame.hxx"
 #include "HandToModel.hxx"
 
-bool running;
+volatile bool running;
 
 void camLoop(Cam_ c, Hand_ h, HandToModel_ htm) {
     do {
@@ -41,11 +41,12 @@ int main(int argc, char * argv[]) {
 
         Tube tube;
         tube.halfSize = cv::Size2f(2.4, 1.6);
-        tube.goal = 3;
-        tube.separator = 13;
-        tube.opponentGoal = 23;
-        tube.handMin = 2.9;
-        tube.handMax = 8;
+        tube.goal = 4;
+        tube.separator = 14;
+        tube.opponentGoal = 24;
+        tube.handMovement = 5;
+        tube.handMax = 10;
+        tube.spawnArea = 4;
 
         ThreeDView view(cv::Size(1366, 768), tube);
         HandToModel_ htm = HandToModel::create(tube);

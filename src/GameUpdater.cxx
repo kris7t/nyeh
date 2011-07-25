@@ -1,10 +1,9 @@
 #include <GameUpdater.hxx>
 
-static const float eps = 1e-3;
+static const float eps = 1e-4;
 
 GameUpdater::GameUpdater(Tube tube)
-    : tube_(tube) {
-
+    : tube_(tube), seed_(time(NULL)) {
 }
 
 static void doCollision(Ball & a, Ball & b) {
@@ -34,16 +33,14 @@ static void doCollision(Ball & a, Ball & b) {
     b.velocity.z += cz;
 }
 
-void GameUpdater::tick(double dt, Balls & balls, GameState & state) const {
+void GameUpdater::tick(double dt, Balls & balls, GameState & state) {
     for (Balls::iterator it = balls.begin();
             it != balls.end(); ++it) {
         it->second.position.x += it->second.velocity.x * dt;
         it->second.position.y += it->second.velocity.y * dt;
         it->second.position.z += it->second.velocity.z * dt;
         if (it->second.position.y < tube_.goal) {
-            Balls::iterator del = it;
-            --it;
-            balls.erase(del);
+            randomizeBall(it->second);
             if (state.own_lives) {
                 state.own_lives -= 1;
             }
@@ -70,4 +67,13 @@ void GameUpdater::tick(double dt, Balls & balls, GameState & state) const {
             }
         }
     }
+}
+
+void GameUpdater::randomizeBall(Ball & ball) {
+    ball.position.x = (static_cast<float>(rand_r(&seed_)) / RAND_MAX * 2 - 1)
+        * tube_.halfSize.width;
+    ball.position.z = (static_cast<float>(rand_r(&seed_)) / RAND_MAX * 2 - 1)
+        * tube_.halfSize.height;
+    ball.position.y = tube_.separator + eps
+        + static_cast<float>(rand_r(&seed_)) / RAND_MAX * tube_.spawnArea;
 }

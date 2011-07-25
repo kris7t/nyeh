@@ -2,7 +2,7 @@
 
 struct Tube {
     cv::Size2f halfSize;
-    float goal, opponentGoal, handMin, handMax, separator;
+    float goal, opponentGoal, handMovement, handMax, separator, spawnArea;
 };
 
 enum BallOwner {

@@ -37,7 +37,7 @@ static void renderTube(const Tube & tube) {
     glEnable(GL_DEPTH_TEST);
 }
 
-static void renderCube(cv::Point3f pos, float r, float g, float b, float a) {
+static void renderCube(cv::Point3f pos, float size,  float r, float g, float b, float a) {
     GLfloat diffuse[] = { r, g, b, a };
     glMaterialfv(GL_FRONT, GL_DIFFUSE, diffuse);
 
@@ -46,68 +46,68 @@ static void renderCube(cv::Point3f pos, float r, float g, float b, float a) {
     glColor4f(r, g, b, a);
     glBegin(GL_QUADS);
     glNormal3f(0, -1, 0);
-    glVertex3f(-.1f, .1f, .1f);
+    glVertex3f(-size, size, size);
     glNormal3f(0, -1, 0);
-    glVertex3f(.1f, .1f, .1f);
+    glVertex3f(size, size, size);
     glNormal3f(0, -1, 0);
-    glVertex3f(.1f, .1f, -.1f);
+    glVertex3f(size, size, -size);
     glNormal3f(0, -1, 0);
-    glVertex3f(-.1f, .1f, -.1f);
+    glVertex3f(-size, size, -size);
 
     glNormal3f(0, 1, 0);
-    glVertex3f(.1f, -.1f, .1f);
+    glVertex3f(size, -size, size);
     glNormal3f(0, 1, 0);
-    glVertex3f(-.1f, -.1f, .1f);
+    glVertex3f(-size, -size, size);
     glNormal3f(0, 1, 0);
-    glVertex3f(-.1f, -.1f, -.1f);
+    glVertex3f(-size, -size, -size);
     glNormal3f(0, 1, 0);
-    glVertex3f(.1f, -.1f, -.1f);
+    glVertex3f(size, -size, -size);
 
     glNormal3f(0, 0, -1);
-    glVertex3f(.1f, -.1f, .1f);
+    glVertex3f(size, -size, size);
     glNormal3f(0, 0, -1);
-    glVertex3f(.1f, .1f, .1f);
+    glVertex3f(size, size, size);
     glNormal3f(0, 0, -1);
-    glVertex3f(-.1f, .1f, .1f);
+    glVertex3f(-size, size, size);
     glNormal3f(0, 0, -1);
-    glVertex3f(-.1f, -.1f, .1f);
+    glVertex3f(-size, -size, size);
 
     glNormal3f(1, 0, 0);
-    glVertex3f(-.1f, -.1f, .1f);
+    glVertex3f(-size, -size, size);
     glNormal3f(1, 0, 0);
-    glVertex3f(-.1f, .1f, .1f);
+    glVertex3f(-size, size, size);
     glNormal3f(1, 0, 0);
-    glVertex3f(-.1f, .1f, -.1f);
+    glVertex3f(-size, size, -size);
     glNormal3f(1, 0, 0);
-    glVertex3f(-.1f, -.1f, -.1f);
+    glVertex3f(-size, -size, -size);
 
     glNormal3f(-1, 0, 0);
-    glVertex3f(.1f, -.1f, -.1f);
+    glVertex3f(size, -size, -size);
     glNormal3f(-1, 0, 0);
-    glVertex3f(.1f, .1f, -.1f);
+    glVertex3f(size, size, -size);
     glNormal3f(-1, 0, 0);
-    glVertex3f(.1f, .1f, .1f);
+    glVertex3f(size, size, size);
     glNormal3f(-1, 0, 0);
-    glVertex3f(.1f, -.1f, .1f);
+    glVertex3f(size, -size, size);
 
     glNormal3f(0, 0, 1);
-    glVertex3f(.1f, .1f, -.1f);
+    glVertex3f(size, size, -size);
     glNormal3f(0, 0, 1);
-    glVertex3f(.1f, -.1f, -.1f);
+    glVertex3f(size, -size, -size);
     glNormal3f(0, 0, 1);
-    glVertex3f(-.1f, -.1f, -.1f);
+    glVertex3f(-size, -size, -size);
     glNormal3f(0, 0, 1);
-    glVertex3f(-.1f, .1f, -.1f);
+    glVertex3f(-size, size, -size);
     glEnd();
     glPopMatrix();
 }
 
 static void renderCubeEnemy(const Ball & ball) {
-    renderCube(ball.position, 1.0f, 1.0f, 0.0f, 1.0f);
+    renderCube(ball.position, .1f, 1.0f, 1.0f, 0.0f, 1.0f);
 }
 
 static void renderCubeEnemyB(const Ball & ball) {
-    renderCube(ball.position, .8f, 0.0f, 0.0f, 1.0f);
+    renderCube(ball.position, .1f, .8f, 0.0f, 0.0f, 1.0f);
 }
 
 BallRenderer ballRenderers[] = {
@@ -164,6 +164,6 @@ void ThreeDView::render(const Balls & balls, HandToModel_ hand,
         ballRenderers[it->second.type](it->second);
     }
 
-    renderCube(hand->position(), 0.0f, 1.0f, 0.0f, 1.0f);
+    renderCube(hand->position(), .25f, 0.0f, 1.0f, 0.0f, 1.0f);
     scoreRenderer_.renderScore(state);
 }
