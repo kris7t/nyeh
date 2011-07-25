@@ -2,32 +2,6 @@
 
 bool glInited = false;
 
-static void renderFrame(GLuint texid, const cv::Mat & frame, const Tube & tube) {
-    glEnable(GL_TEXTURE_2D);
-    glDisable(GL_LIGHTING);
-    glBindTexture(GL_TEXTURE_2D, texid);
-    glColor4f(1, 1, 1, 1);
-
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, frame.cols, frame.rows, 0, GL_BGR,
-                 GL_UNSIGNED_BYTE, frame.ptr(0));
-    glBegin(GL_QUADS);
-        glTexCoord2f(0, 1);
-        glVertex3f(-tube.halfSize.width, tube.opponentGoal, -tube.halfSize.height);
-
-        glTexCoord2f(1, 1);
-        glVertex3f(tube.halfSize.width, tube.opponentGoal, -tube.halfSize.height);
-
-        glTexCoord2f(1, 0);
-        glVertex3f(tube.halfSize.width, tube.opponentGoal, tube.halfSize.height);
-
-        glTexCoord2f(0, 0);
-        glVertex3f(-tube.halfSize.width, tube.opponentGoal, tube.halfSize.height);
-    glEnd();
-
-    glDisable(GL_TEXTURE_2D);
-    glEnable(GL_LIGHTING);
-}
-
 static void renderTube(const Tube & tube) {
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_LIGHTING);
@@ -141,7 +115,7 @@ BallRenderer ballRenderers[] = {
     &renderCubeEnemyB
 };
 
-ThreeDView::ThreeDView(cv::Size size, Tube tube) : tube_(tube) {
+ThreeDView::ThreeDView(cv::Size size, Tube tube) : tube_(tube), camRenderer_(tube) {
     if (!glInited) {
         glewInit();
         glfwInit();
@@ -172,24 +146,21 @@ ThreeDView::ThreeDView(cv::Size size, Tube tube) : tube_(tube) {
 
     glClearColor(.39f, .58f, .93f, 1.0f);
 
-    glGenTextures(1, &texid_);
-    glBindTexture(GL_TEXTURE_2D, texid_);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
+    camRenderer_.init();
     scoreRenderer_ = ScoreRenderer(tube_, size);
 }
 
 ThreeDView::~ThreeDView() {
-    glDeleteTextures(1, &texid_);
+    camRenderer_.dispose();
     glfwTerminate();
 }
 
 void ThreeDView::render(const Balls & balls, HandToModel_ hand,
-        const GameState & state, const cv::Mat & frame) const {
+        const GameState & state, const cv::Mat & frame) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    renderFrame(texid_, frame, tube_);
+    camRenderer_.upload(frame);
+    camRenderer_.render(false, false);
     renderTube(tube_);
 
     for (Balls::const_iterator it = balls.begin();
@@ -198,5 +169,6 @@ void ThreeDView::render(const Balls & balls, HandToModel_ hand,
     }
 
     renderCube(hand->position(), .25f, 0.0f, 1.0f, 0.0f, 1.0f);
+    camRenderer_.render(true, true);
     scoreRenderer_.renderScore(state);
 }
