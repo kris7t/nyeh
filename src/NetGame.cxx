@@ -67,7 +67,7 @@ public:
             }
         }
     }
-    GamePacket(const CharVect & ptr) {
+    GamePacket(const std::string & ptr) {
         size_t s = ptr.size() / sizeof(GamePacketStruct);
         for (size_t i = 0; i < s; ++i) {
             data.push_back(GamePacketStruct(&ptr[i*sizeof(GamePacketStruct)]));
@@ -76,7 +76,7 @@ public:
 
     int pid() const { return 0x20; }
     Char_ write() const {
-        Char_ ret(new CharVect(data.size() * sizeof(GamePacketStruct)));
+        Char_ ret(new std::string(data.size() * sizeof(GamePacketStruct), 0));
 
         for (size_t i = 0; i < data.size(); ++i) {
             memcpy(&(*ret)[i * sizeof(GamePacketStruct)], &data[i], sizeof(GamePacketStruct));
@@ -119,13 +119,12 @@ struct GameStatePacketStruct {
 class GameStatePacket : public Packet {
 public:
     GameStatePacket(const GameState & state) : struc(state) { struc.toNet(); }
-    GameStatePacket(const CharVect & ptr) : struc(&ptr[0]) {}
+    GameStatePacket(const std::string & ptr) : struc(&ptr[0]) {}
 
     int pid() const { return 0x21; }
     Char_ write() const {
-        Char_ ret(new CharVect(sizeof(GamePacketStruct)));
-        memcpy(&(*ret)[0], &struc, sizeof(GamePacketStruct));
-        return ret;
+        return Char_(new std::string(reinterpret_cast<const char *>(&struc),
+                                     sizeof(GamePacketStruct)));
     }
 
     void apply(GameState & state) {

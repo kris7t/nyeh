@@ -1,15 +1,19 @@
 #include "Net.hxx"
+#include "fnv.hxx"
 
 struct PacketHeader {
     void fromNet() {
         len = be64toh(len);
+        hash = be64toh(hash);
     }
     void toNet() {
         len = htobe64(len);
+        hash = htobe64(hash);
     }
 
     uint8_t pid;
     uint64_t len;
+    uint64_t hash;
 } NOALIGN;
 
 PacketReader::PacketReader(int id) {
@@ -80,9 +84,17 @@ Packet_ NetSocket::recv() {
     while (true) {
         errno = 0;
         ssize_t ret = ::recv(sock, &tbuf, 4096, MSG_DONTWAIT);
-        if (ret == -1 && errno != EAGAIN && errno != EWOULDBLOCK) {
-            perror("recv");
-            throw std::string("recv err.");
+        if (ret == -1) {
+            if (errno == ECONNRESET || errno == ECONNABORTED || errno == ENETRESET) {
+                close(sock);
+                sock = 0;
+                return Packet_();
+            } else if (errno != EAGAIN && errno != EWOULDBLOCK) {
+                int e = errno;
+                perror("recv");
+                std::cout << "err: " << e << std::endl;
+                throw std::string("recv err.");
+            }
         }
 
         if (ret > 0) {
@@ -91,7 +103,7 @@ Packet_ NetSocket::recv() {
                 buf = static_cast<char *>(realloc(buf, newsize));
                 memcpy(buf+bufl, buf, std::min(bufp, newsize-bufl));
                 if (newsize - bufl < bufp)
-                    memcpy(buf, buf + newsize - bufl, bufp-(newsize-bufl));
+                    memmove(buf, buf + newsize - bufl, bufp-(newsize-bufl));
 
                 // data before bufp
                 // |a1a2a3a4[p b1]b2b3b4|         bef
@@ -100,11 +112,7 @@ Packet_ NetSocket::recv() {
                 // |a4a2a3a4[p b1]b2b3b4[l a1]a2a3|
                 // |a4e0e1e2[p b1]b2b3b4[l a1]a2a3| aft
 
-                // |a1a2[p b1]b2|
-                // |a1a2[p b1]b2[l e1]e2e3e4e5|
-                // |a1a2[p b1]b2[l a1]a2e3e4e5|
-
-                bufl = read+ret;
+                bufl = newsize;
             }
 
             int st = (bufp+read) % bufl;
@@ -120,17 +128,21 @@ Packet_ NetSocket::recv() {
                 xmemcpy(&hdr, buf, bufp, bufl, sizeof(PacketHeader));
                 hdr.fromNet();
                 id = hdr.pid;
+                hash = hdr.hash;
                 bufp = (bufp + size) % bufl;
                 read -= size;
                 size = hdr.len;
                 is_head = false;
             } else {
-                CharVect ptr(size);
+                std::string ptr(size, 0);
                 xmemcpy((char *) &ptr[0], buf, bufp, bufl, size);
                 bufp = (bufp + size) % bufl;
                 read -= size;
                 size = sizeof(PacketHeader);
                 is_head = true;
+                if (hash::fnv<64>()(ptr) != hash) {
+                    throw std::string("hash fail!");
+                }
                 PacketReader& x = PacketReader::get(id);
                 return x.read(ptr);
             }
@@ -146,6 +158,7 @@ void NetSocket::send(const Packet& pak) {
     hdr.pid = pak.pid();
     Char_ ptr = pak.write();
     hdr.len = ptr->size();
+    hdr.hash = hash::fnv<64>()(*ptr);
     hdr.toNet();
 
     int ret = ::send(sock, &hdr, sizeof(PacketHeader), MSG_NOSIGNAL);
