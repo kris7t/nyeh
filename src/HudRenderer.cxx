@@ -33,7 +33,7 @@ void HudRenderer::upload(const cv::Mat & frame) {
     glBindTexture(GL_TEXTURE_2D, texture_[1]);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, frame.cols, frame.rows, 0, GL_BGR,
                  GL_UNSIGNED_BYTE, frame.ptr(0));
-    imgsize_ = cv::Size(frame.cols, frame.rows);
+    imgsize_ = cv::Size(frame.cols / 2, frame.rows / 2);
 }
 
 void HudRenderer::renderScore(const GameState & state) const {
@@ -81,7 +81,7 @@ void HudRenderer::renderScore(const GameState & state) const {
     glEnd();
 
     glBindTexture(GL_TEXTURE_2D, texture_[1]);
-    glColor4f(1, 1, 1, 0.9f);
+    glColor4f(1, 1, 1, 1);
     glBegin(GL_QUADS);
     glTexCoord2f(1, 1); glVertex2f(size_.width - imgsize_.width, size_.height);
     glTexCoord2f(0, 1); glVertex2f(size_.width, size_.height);
