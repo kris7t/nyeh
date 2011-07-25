@@ -2,39 +2,57 @@
 
 bool glInited = false;
 
-static void renderTube(const Tube & tube) {
-    glDisable(GL_DEPTH_TEST);
-    glDisable(GL_LIGHTING);
-    glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-    glBegin(GL_LINE_STRIP);
-    glVertex3f(tube.halfSize.width, tube.goal, -tube.halfSize.height);
-    glVertex3f(tube.halfSize.width, tube.goal, tube.halfSize.height);
-    glVertex3f(-tube.halfSize.width, tube.goal, tube.halfSize.height);
-    glVertex3f(-tube.halfSize.width, tube.goal, -tube.halfSize.height);
-    glVertex3f(tube.halfSize.width, tube.goal, -tube.halfSize.height);
-    glVertex3f(tube.halfSize.width, tube.opponentGoal, -tube.halfSize.height);
-    glVertex3f(-tube.halfSize.width, tube.opponentGoal, -tube.halfSize.height);
-    glVertex3f(-tube.halfSize.width, tube.opponentGoal, tube.halfSize.height);
-    glVertex3f(tube.halfSize.width, tube.opponentGoal, tube.halfSize.height);
-    glVertex3f(tube.halfSize.width, tube.opponentGoal, -tube.halfSize.height);
-    glEnd();
-    glBegin(GL_LINES);
-    glVertex3f(-tube.halfSize.width, tube.goal, -tube.halfSize.height);
-    glVertex3f(-tube.halfSize.width, tube.opponentGoal, -tube.halfSize.height);
-    glVertex3f(-tube.halfSize.width, tube.goal, tube.halfSize.height);
-    glVertex3f(-tube.halfSize.width, tube.opponentGoal, tube.halfSize.height);
-    glVertex3f(tube.halfSize.width, tube.goal, tube.halfSize.height);
-    glVertex3f(tube.halfSize.width, tube.opponentGoal, tube.halfSize.height);
-    glEnd();
-    glBegin(GL_LINE_STRIP);
-    glVertex3f(tube.halfSize.width, tube.separator, tube.halfSize.height);
-    glVertex3f(-tube.halfSize.width, tube.separator, tube.halfSize.height);
-    glVertex3f(-tube.halfSize.width, tube.separator, -tube.halfSize.height);
-    glVertex3f(tube.halfSize.width, tube.separator, -tube.halfSize.height);
-    glVertex3f(tube.halfSize.width, tube.separator, tube.halfSize.height);
-    glEnd();
-    glEnable(GL_LIGHTING);
-    glEnable(GL_DEPTH_TEST);
+static void doStrip(float sx, float sz, float ex, float ez, float y1, float y2, int div) {
+    float xw = (ex - sx) / div;
+    float zw = (ez - sz) / div;
+    for (int i = 0; i <= div; ++i) {
+        glVertex3f(sx + i*xw, y1, sz + i*zw);
+        glVertex3f(sx + i*xw, y2, sz + i*zw);
+    }
+}
+
+static void renderTubeWall(const Tube & tube, int ydiv, int div) {
+    GLfloat col[] = {.39f, .58f, .93f, 1};
+    glMaterialfv(GL_FRONT, GL_DIFFUSE, col);
+    glMaterialfv(GL_FRONT, GL_AMBIENT, col);
+
+    //float yw = (tube.opponentGoal - tube.goal) / ydiv;
+    float ym = (tube.opponentGoal - tube.goal) / (ydiv * ydiv);
+
+    for (int y = 0; y < ydiv; ++y) {
+        float y1 = tube.goal + (y+1) * (y+1) * ym;
+        float y2 = tube.goal + (y*y) * ym;
+
+        glBegin(GL_QUAD_STRIP);
+        glNormal3f(0,0,1);
+        doStrip(-tube.halfSize.width, -tube.halfSize.height,
+                tube.halfSize.width, -tube.halfSize.height,
+                y1, y2, div);
+        glEnd();
+
+        glBegin(GL_QUAD_STRIP);
+        glNormal3f(-1,0,0);
+        doStrip(tube.halfSize.width, -tube.halfSize.height,
+                tube.halfSize.width, tube.halfSize.height,
+                y1, y2, div);
+        glEnd();
+
+        glBegin(GL_QUAD_STRIP);
+        glNormal3f(0,0,-1);
+        doStrip(tube.halfSize.width, tube.halfSize.height,
+                -tube.halfSize.width, tube.halfSize.height,
+                y1, y2, div);
+
+        glEnd();
+
+        glBegin(GL_QUAD_STRIP);
+        glNormal3f(1,0,0);
+        doStrip(-tube.halfSize.width, tube.halfSize.height,
+                -tube.halfSize.width, -tube.halfSize.height,
+                y1, y2, div);
+        glEnd();
+    }
+
 }
 
 static void renderSphere(const cv::Point3f pos, float size, float r, float g, float b) {
@@ -49,7 +67,7 @@ static void renderSphere(const cv::Point3f pos, float size, float r, float g, fl
     glPushMatrix();
     glTranslatef(pos.x, pos.y, pos.z);
 
-    gluSphere(q, size, 10, 8);
+    gluSphere(q, size, 100./pos.y, 80./pos.y);
     glPopMatrix();
 }
 
@@ -91,26 +109,30 @@ ThreeDView::ThreeDView(cv::Size size, Tube tube)
     glEnable(GL_LIGHTING);
     glEnable(GL_LIGHT0);
 
-    GLfloat pos[] = {-2, 0, 2, 1}; //{-tube_.halfSize.width, 0, tube_.halfSize.height, 1};
-    glLightfv(GL_LIGHT0, GL_POSITION, pos);
-    GLfloat spec[] = {0.2f,0.2f,0.2f,1};
-    glLightfv(GL_LIGHT0, GL_SPECULAR, spec);
-    GLfloat diff[] = {1,1,1,1};
-    glLightfv(GL_LIGHT0, GL_DIFFUSE, diff);
-    glLightf(GL_LIGHT0, GL_CONSTANT_ATTENUATION, 1.0f);
-    glLightf(GL_LIGHT0, GL_LINEAR_ATTENUATION, 0.0f);
-    glLightf(GL_LIGHT0, GL_QUADRATIC_ATTENUATION, 0.005f);
-    GLfloat gamb[] = { 0.1f, 0.1f, 0.1f, 1};
-    glLightModelfv(GL_LIGHT_MODEL_AMBIENT, gamb);
-    glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, GL_TRUE);
+    {
+        GLfloat pos[] = {-tube_.halfSize.width/2, 0, tube_.halfSize.height/2, 1};
+        glLightfv(GL_LIGHT0, GL_POSITION, pos);
+        GLfloat spec[] = {0.2f,0.2f,0.2f,1};
+        glLightfv(GL_LIGHT0, GL_SPECULAR, spec);
+        GLfloat diff[] = {1,1,1,1};
+        glLightfv(GL_LIGHT0, GL_DIFFUSE, diff);
+        glLightf(GL_LIGHT0, GL_CONSTANT_ATTENUATION, 1.0f);
+        glLightf(GL_LIGHT0, GL_LINEAR_ATTENUATION, 0.0f);
+        glLightf(GL_LIGHT0, GL_QUADRATIC_ATTENUATION, 0.015f);
+        GLfloat gamb[] = { 0.1f, 0.1f, 0.1f, 1};
+        glLightModelfv(GL_LIGHT_MODEL_AMBIENT, gamb);
+        glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, GL_TRUE);
+    }
 
-    glEnable(GL_LIGHT1);
-    pos = {1, 0, 1, 0};
-    glLightfv(GL_LIGHT1, GL_POSITION, pos);
-    spec = { 0.0f, 0.0f, 0.0f, 1.0f };
-    glLightfv(GL_LIGHT1, GL_SPECULAR, spec);
-    diff = { 0.3f, 0.3f, 0.3f, 1};
-    glLightfv(GL_LIGHT1, GL_DIFFUSE, diff);
+    {
+        glEnable(GL_LIGHT1);
+        GLfloat pos[] = {0, -1, 0, 0};
+        glLightfv(GL_LIGHT1, GL_POSITION, pos);
+        GLfloat spec[] = { 0.0f, 0.0f, 0.0f, 1.0f };
+        glLightfv(GL_LIGHT1, GL_SPECULAR, spec);
+        GLfloat diff[] = { 0.3f, 0.3f, 0.3f, 1};
+        glLightfv(GL_LIGHT1, GL_DIFFUSE, diff);
+    }
 
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LEQUAL);
@@ -137,7 +159,7 @@ void ThreeDView::render(const Balls & balls, HandToModel_ hand,
 
     camRenderer_.upload(frame);
     camRenderer_.render(false, false);
-    renderTube(tube_);
+    renderTubeWall(tube_, 5, 3);
 
     for (Balls::const_iterator it = balls.begin();
             it != balls.end(); ++it) {
