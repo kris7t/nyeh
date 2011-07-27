@@ -84,14 +84,13 @@ int main(int argc, char * argv[]) {
         boost::thread camThread(boost::bind(&camLoop, c, nc, hh, htm));
 
         do {
-            ng->sync(balls, gs, tube);
-            nc->grabImage();
-
             glfwSetTime(0.0);
             view.render(balls, htm, gs, nc->frame(), c->frame());
             glfwSwapBuffers();
             glfwSleep(0.01);
             game.tick(glfwGetTime(), balls, gs, htm);
+            ng->sync(balls, gs, tube);
+            nc->grabImage();
             running = !glfwGetKey(GLFW_KEY_ESC) && (gs.own_lives > 0) && (gs.opponent_lives > 0);
         } while (running);
        
