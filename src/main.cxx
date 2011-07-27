@@ -50,7 +50,7 @@ int main(int argc, char * argv[]) {
         tube.separator = 13;
         tube.opponentGoal = 23;
         tube.handMovement = 5;
-        tube.handMax = 10;
+        tube.handMax = 8;
         tube.spawnArea = 4;
 
         ThreeDView view(cv::Size(1366, 768), tube);

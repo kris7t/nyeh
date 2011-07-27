@@ -89,6 +89,24 @@ void HudRenderer::renderScore(const GameState & state) const {
     glTexCoord2f(1, 0); glVertex2f(size_.width - imgsize_.width, size_.height - imgsize_.height);
     glEnd();
 
+    glDisable(GL_TEXTURE_2D);
+    glDisable(GL_CULL_FACE);
+
+    double pos = (state.own_ratio -.5) * 200;
+    glBegin(GL_QUADS);
+    glColor4f(1,0,0, .8f);
+    glVertex2f(size_.width / 2 - 100, 30);
+    glVertex2f(size_.width / 2 + pos, 30);
+    glVertex2f(size_.width / 2 + pos, 10);
+    glVertex2f(size_.width / 2 - 100, 10);
+
+    glColor4f(0,1,0, .6f);
+    glVertex2f(size_.width / 2 + pos, 30);
+    glVertex2f(size_.width / 2 + 100, 30);
+    glVertex2f(size_.width / 2 + 100, 10);
+    glVertex2f(size_.width / 2 + pos, 10);
+    glEnd();
+
     glPopMatrix();
 
     glMatrixMode(GL_PROJECTION);

@@ -30,4 +30,5 @@ extern const float handSize;
 struct GameState {
     uint8_t own_lives;
     uint8_t opponent_lives;
+    double own_ratio;
 };

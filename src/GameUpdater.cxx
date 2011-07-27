@@ -72,6 +72,7 @@ void doCollision(Ball & ball, HandToModel_ hand) {
 }
 
 void GameUpdater::tick(double dt, Balls & balls, GameState & state, HandToModel_ hand) {
+    size_t local_balls = 0;
     for (Balls::iterator it = balls.begin();
             it != balls.end(); ++it) {
         it->second.position.x += it->second.velocity.x * dt;
@@ -85,6 +86,8 @@ void GameUpdater::tick(double dt, Balls & balls, GameState & state, HandToModel_
             }
         }
         BallType type = ballTypes[it->second.type];
+        ++local_balls;
+
         if (it->second.position.y < tube_.goal) {
             randomizeBall(it->second);
             if (state.own_lives > type.value) {
@@ -107,6 +110,8 @@ void GameUpdater::tick(double dt, Balls & balls, GameState & state, HandToModel_
                     it->second.position.z);
         }
     }
+    state.own_ratio = double(local_balls) / balls.size();
+
     for (Balls::iterator a = balls.begin();
             a != balls.end(); ++a) {
         if (a->second.owner != ballOwnerLocal) {
