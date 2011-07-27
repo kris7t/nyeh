@@ -8,6 +8,7 @@ const BallType ballTypes[] = {
 const float handSize = .3;
 
 static const float eps = 1e-4;
+static const float collisionThresh = 0.1;
 
 GameUpdater::GameUpdater(Tube tube)
     : tube_(tube), seed_(time(NULL)) {
@@ -32,7 +33,7 @@ static float dot(cv::Point3f a, cv::Point3f b) {
 static void doCollision(Ball & a, Ball & b) {
     float norm;
     cv::Point3f diff = normDiff(a.position, b.position, &norm);
-    if (!(norm <= ballTypes[a.type].size + ballTypes[b.type].size + eps) || norm < eps) {
+    if (!(norm <= ballTypes[a.type].size + ballTypes[b.type].size + collisionThresh) || norm < eps) {
         return;
     }
     float dota = dot(a.velocity, diff);
@@ -57,7 +58,7 @@ void doCollision(Ball & ball, HandToModel_ hand) {
         hv = hand->velocity();
     float norm;
     cv::Point3f diff = normDiff(ball.position, hp, &norm);
-    if (!(norm <= ballTypes[ball.type].size + handSize + eps) || norm < eps) {
+    if (!(norm <= ballTypes[ball.type].size + handSize + collisionThresh) || norm < eps) {
         return;
     }
     float vball = dot(ball.velocity, diff),

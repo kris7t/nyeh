@@ -8,6 +8,9 @@
 #include "NetCam.hxx"
 #include "HandToModel.hxx"
 
+static const int redBalls = 3;
+static const int yellowBalls = 12;
+
 volatile bool running;
 
 void camLoop(Cam_ c, NetCam_ nc, Hand_ h, HandToModel_ htm) {
@@ -21,26 +24,26 @@ void camLoop(Cam_ c, NetCam_ nc, Hand_ h, HandToModel_ htm) {
 
 int main(int argc, char * argv[]) {
     try {
-        if (argc < 4) {
-            std::cout << "Usage: " << argv[0] << " <cam id> <fill ratio> <dt> [server]" << std::endl;
+        if (argc < 2) {
+            std::cout << "Usage: " << argv[0] << " <cam id> [server]" << std::endl;
             return -1;
         }
 
         NetGame_ ng;
         NetCam_ nc;
-        int balloff;
-        if (argc < 5) {
+        int ballof;
+        if (argc < 3) {
             ng.reset(new NetGame());
             nc.reset(new NetCam());
-            balloff = 0;
+            ballof = 0;
         } else {
-            ng.reset(new NetGame(argv[4]));
-            nc.reset(new NetCam(argv[4]));
-            balloff = 0xffff;
+            ng.reset(new NetGame(argv[2]));
+            nc.reset(new NetCam(argv[2]));
+            ballof = 0xffff;
         }
 
         Cam_ c = Cam::create(atoi(argv[1]));
-        Hand_ hh(new HistogramHand(atof(argv[2]), atof(argv[3])));
+        Hand_ hh(new HistogramHand(0.2, 0.1));
 
         hh->calibrate(c);
 
@@ -60,30 +63,21 @@ int main(int argc, char * argv[]) {
         gs.own_lives = 12;
         gs.opponent_lives = 12;
 
-        Balls balls;
+        GameUpdater game(tube);
 
+        Balls balls;
         Ball b;
         b.owner = ballOwnerLocal;
-        b.type = 1;
-        b.velocity = cv::Point3f(0, -1, 0);
-        b.position = cv::Point3f(-2.0f, 13.0f, 2.0f);
-        balls[balloff+1] = b;
-
-        b.type = 1;
-        b.velocity = cv::Point3f(0, -1, 1);
-        b.position = cv::Point3f(2.0f, 13.0f, 1.0f);
-        balls[balloff+2] = b;
-
         b.type = 0;
-        b.velocity = cv::Point3f(1, -1, 0);
-        for (int j = 0; j < 3; ++j) {
-            for (int i = 0; i < 3; ++i) {
-                b.position = cv::Point3f(-1.6 + 0.5f * i, 13.0f, -1.2f + 0.5f * j);
-                balls[balloff + 3 + j * 20 + i] = b;
-            }
+        for (int i = 0; i < yellowBalls; ++i) {
+            game.randomizeBall(b);
+            balls[ballof + i] = b;
         }
-
-        GameUpdater game(tube);
+        b.type = 1;
+        for (int i = 0; i < redBalls; ++i) {
+            game.randomizeBall(b);
+            balls[ballof + yellowBalls + i] = b;
+        }
 
         running = true;
 
@@ -98,11 +92,29 @@ int main(int argc, char * argv[]) {
             glfwSwapBuffers();
             glfwSleep(0.01);
             game.tick(glfwGetTime(), balls, gs, htm);
-            running = !glfwGetKey(GLFW_KEY_ESC);
+            running = !glfwGetKey(GLFW_KEY_ESC) && (gs.own_lives > 0) && (gs.opponent_lives > 0);
         } while (running);
+       
+        int ret;
+        if (gs.opponent_lives <= 0) {
+            if (gs.own_lives <= 0) {
+                std::cout << "\n\aTIE! Play another round?\n";
+                ret = 2;
+            } else {
+                std::cout << "\n\aOU WON! Congratulations.\n";
+                ret = 0;
+            }
+        } else if (gs.own_lives <= 0) {
+            std::cout << "\n\aGAME OVER! Better luck next time.\n";
+            ret = 3;
+        } else {
+            std::cout << "\n\aGame terminated before conclusion.\n";
+            ret = 1;
+        }
+        std::cout << gs.own_ratio * 100 << "% of the balls were still in your court." << std::endl;
 
         camThread.join();
-        return 0;
+        return ret;
     } catch (const std::string& str) {
         std::cerr << "exception: " << str << std::endl;
         return -1;
