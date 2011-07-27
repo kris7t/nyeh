@@ -5,7 +5,7 @@ const BallType ballTypes[] = {
     { .1, 1, 1, 0, 0 },     // 0
     { .1, .8, 0, 0, 1}      // 1
 };
-const float handSize = .25;
+const float handSize = .3;
 
 static const float eps = 1e-4;
 
@@ -37,7 +37,7 @@ static void doCollision(Ball & a, Ball & b) {
     }
     float dota = dot(a.velocity, diff);
     float dotb = dot(b.velocity, diff);
-    if (dotb < dota) {
+    if (dotb < dota + eps) {
         return;
     }
     float dotdiff = dota - dotb,
@@ -62,7 +62,7 @@ void doCollision(Ball & ball, HandToModel_ hand) {
     }
     float vball = dot(ball.velocity, diff),
           vhand = dot(hv, diff);
-    if (vhand < vball) {
+    if (vhand < vball + eps) {
         return;
     }
     float change = 2 * (vhand - vball);
@@ -90,7 +90,7 @@ void GameUpdater::tick(double dt, Balls & balls, GameState & state, HandToModel_
 
         if (it->second.position.y < tube_.goal) {
             randomizeBall(it->second);
-            if (state.own_lives > type.value) {
+            if (state.own_lives >= type.value) {
                 state.own_lives -= type.value;
             }
             std::cout << "\a" << std::flush;

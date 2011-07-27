@@ -81,7 +81,7 @@ ThreeDView::ThreeDView(cv::Size size, Tube tube)
         throw "3DView already running!";
     }
     glfwOpenWindowHint(GLFW_FSAA_SAMPLES, 4);
-    if (!glfwOpenWindow(size.width, size.height, 8, 8, 8, 8, 32, 0, GLFW_FULLSCREEN)) {
+    if (!glfwOpenWindow(size.width, size.height, 8, 8, 8, 0, 24, 0, GLFW_FULLSCREEN)) {
         throw "Cannot open OpenGL window";
     }
 

@@ -10,8 +10,8 @@ HandToModel::HandToModel(Tube tube) : tube_(tube) {
 void HandToModel::update(Hand_ hand) {
     cv::Point3f pos = hand->position();
     cv::Point3f vel = hand->velocity();
-    position_.x = std::min(std::max((pos.x / 160 - 1), -1.f), 1.f) * (tube_.halfSize.width - .25f);
-    position_.z = -std::min(std::max((pos.y / 120 - 1), -1.f), 1.f) * (tube_.halfSize.height - .25f);
+    position_.x = std::min(std::max(((pos.x - 10) / 140 - 1), -1.f), 1.f) * (tube_.halfSize.width - handSize);
+    position_.z = -std::min(std::max(((pos.y - 10) / 100 - 1), -1.f), 1.f) * (tube_.halfSize.height - handSize);
     if (pos.z < hand->minRadius()) {
         position_.y = tube_.handMax - tube_.handMovement;
     } else if (pos.z > hand->maxRadius()) {
@@ -20,8 +20,8 @@ void HandToModel::update(Hand_ hand) {
         double lambda = (hand->maxRadius() / pos.z - 1.0) / hand->kappa();
         position_.y = tube_.handMax - tube_.handMovement * lambda;
     }
-    velocity_.x = vel.x / 160 * tube_.halfSize.width;
-    velocity_.z = -vel.y / 120 * tube_.halfSize.height;
+    velocity_.x = vel.x / 140 * tube_.halfSize.width;
+    velocity_.z = -vel.y / 100 * tube_.halfSize.height;
     double phi = hand->maxRadius() * tube_.handMovement / hand->kappa();
     velocity_.y = phi / (pos.z * pos.z) * vel.z;
 }
