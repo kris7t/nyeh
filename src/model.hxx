@@ -18,6 +18,15 @@ struct Ball {
 
 typedef std::map<uint64_t, Ball> Balls;
 
+struct BallType {
+    float size, r, g, b;
+    int value;
+};
+
+extern const BallType ballTypes[];
+
+extern const float handSize;
+
 struct GameState {
     uint8_t own_lives;
     uint8_t opponent_lives;

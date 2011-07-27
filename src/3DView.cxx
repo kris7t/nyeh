@@ -67,22 +67,9 @@ static void renderSphere(const cv::Point3f pos, float size, float r, float g, fl
     glPushMatrix();
     glTranslatef(pos.x, pos.y, pos.z);
 
-    gluSphere(q, size, 100./pos.y, 80./pos.y);
+    gluSphere(q, size, 320.*sqrtf(size)/pos.y, 250.*sqrtf(size)/pos.y);
     glPopMatrix();
 }
-
-static void renderSphereEnemy(const Ball & ball) {
-    renderSphere(ball.position, .1f, 1,1,0);
-}
-
-static void renderSphereEnemyB(const Ball & ball) {
-    renderSphere(ball.position, .1f, .8f,0,0);
-}
-
-BallRenderer ballRenderers[] = {
-    &renderSphereEnemy,
-    &renderSphereEnemyB
-};
 
 ThreeDView::ThreeDView(cv::Size size, Tube tube)
     : tube_(tube), hudRenderer_(tube_, size), camRenderer_(tube) {
@@ -163,10 +150,11 @@ void ThreeDView::render(const Balls & balls, HandToModel_ hand,
 
     for (Balls::const_iterator it = balls.begin();
             it != balls.end(); ++it) {
-        ballRenderers[it->second.type](it->second);
+        BallType type = ballTypes[it->second.type];
+        renderSphere(it->second.position, type.size, type.r, type.g, type.b);
     }
 
-    renderSphere(hand->position(), .25f, 0.0f, 1.0f, 0.0f);
+    renderSphere(hand->position(), handSize, 0.0f, 1.0f, 0.0f);
     camRenderer_.render(true, true);
     hudRenderer_.upload(ownframe);
     hudRenderer_.renderScore(state);

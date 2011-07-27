@@ -1,5 +1,12 @@
 #include <GameUpdater.hxx>
 
+const BallType ballTypes[] = {
+    // size, r, g, b, value
+    { .1, 1, 1, 0, 0 },     // 0
+    { .1, .8, 0, 0, 1}      // 1
+};
+const float handSize = .25;
+
 static const float eps = 1e-4;
 
 GameUpdater::GameUpdater(Tube tube)
@@ -25,7 +32,7 @@ static float dot(cv::Point3f a, cv::Point3f b) {
 static void doCollision(Ball & a, Ball & b) {
     float norm;
     cv::Point3f diff = normDiff(a.position, b.position, &norm);
-    if (!(norm <= .25f) || norm < eps) {
+    if (!(norm <= ballTypes[a.type].size + ballTypes[b.type].size + eps) || norm < eps) {
         return;
     }
     float dota = dot(a.velocity, diff);
@@ -50,7 +57,7 @@ void doCollision(Ball & ball, HandToModel_ hand) {
         hv = hand->velocity();
     float norm;
     cv::Point3f diff = normDiff(ball.position, hp, &norm);
-    if (!(norm <= .55f) || norm < eps) {
+    if (!(norm <= ballTypes[ball.type].size + handSize + eps) || norm < eps) {
         return;
     }
     float vball = dot(ball.velocity, diff),
@@ -77,27 +84,26 @@ void GameUpdater::tick(double dt, Balls & balls, GameState & state, HandToModel_
                 continue;
             }
         }
+        BallType type = ballTypes[it->second.type];
         if (it->second.position.y < tube_.goal) {
             randomizeBall(it->second);
-            if (state.own_lives) {
-                state.own_lives -= 1;
+            if (state.own_lives > type.value) {
+                state.own_lives -= type.value;
             }
             std::cout << "\a" << std::flush;
             continue;
         }
-        if (cv::norm(it->second.position - hand->position()) <= .55f) {
-            doCollision(it->second, hand);
-        }
-        if (std::abs(it->second.position.x) >= tube_.halfSize.width - .1f) {
+        doCollision(it->second, hand);
+        if (std::abs(it->second.position.x) >= tube_.halfSize.width - type.size) {
             it->second.velocity.x = -copysign(it->second.velocity.x,
                     it->second.position.x);
-            it->second.position.x = copysign(tube_.halfSize.width - .1f - eps,
+            it->second.position.x = copysign(tube_.halfSize.width - type.size - eps,
                     it->second.position.x);
         }
-        if (std::abs(it->second.position.z) >= tube_.halfSize.height - .1f) {
+        if (std::abs(it->second.position.z) >= tube_.halfSize.height - type.size) {
             it->second.velocity.z = -copysign(it->second.velocity.z,
                     it->second.position.z);
-            it->second.position.z = copysign(tube_.halfSize.height - .1f - eps,
+            it->second.position.z = copysign(tube_.halfSize.height - type.size - eps,
                     it->second.position.z);
         }
     }

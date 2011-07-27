@@ -12,10 +12,10 @@ static const cv::Mat closekernel = (cv::Mat_<uchar>(cv::Size(5,5)) <<
     1, 1, 1, 1, 1,
     0, 1, 1, 1, 0);
 static const float sigma2_s = 5;
-static const float sigma2_r = 5;
+static const float sigma2_r = 7;
 static const float sigma2_ms = .1;
 static const float sigma2_mr = .1;
-static const float L = 100;
+static const float L = 1000;
 
 HistogramHand::HistogramHand(double fillratio, double t) : fillratio_(fillratio), kf(6, 3, 0), measurement(3, 1, CV_32FC1) {
 
