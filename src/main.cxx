@@ -57,8 +57,8 @@ int main(int argc, char * argv[]) {
         HandToModel_ htm = HandToModel::create(tube);
 
         GameState gs;
-        gs.own_lives = 3;
-        gs.opponent_lives = 2;
+        gs.own_lives = 12;
+        gs.opponent_lives = 12;
 
         Balls balls;
 
