@@ -88,16 +88,16 @@ void GameUpdater::tick(double dt, Balls & balls, GameState & state, HandToModel_
         if (cv::norm(it->second.position - hand->position()) <= .55f) {
             doCollision(it->second, hand);
         }
-        if (std::abs(it->second.position.x) >= tube_.halfSize.width) {
+        if (std::abs(it->second.position.x) >= tube_.halfSize.width - .1f) {
             it->second.velocity.x = -copysign(it->second.velocity.x,
                     it->second.position.x);
-            it->second.position.x = copysign(tube_.halfSize.width - eps,
+            it->second.position.x = copysign(tube_.halfSize.width - .1f - eps,
                     it->second.position.x);
         }
-        if (std::abs(it->second.position.z) >= tube_.halfSize.height) {
+        if (std::abs(it->second.position.z) >= tube_.halfSize.height - .1f) {
             it->second.velocity.z = -copysign(it->second.velocity.z,
                     it->second.position.z);
-            it->second.position.z = copysign(tube_.halfSize.height - eps,
+            it->second.position.z = copysign(tube_.halfSize.height - .1f - eps,
                     it->second.position.z);
         }
     }

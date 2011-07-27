@@ -10,8 +10,8 @@ HandToModel::HandToModel(Tube tube) : tube_(tube) {
 void HandToModel::update(Hand_ hand) {
     cv::Point3f pos = hand->position();
     cv::Point3f vel = hand->velocity();
-    position_.x = std::min(std::max((pos.x / 160 - 1), -1.f), 1.f) * tube_.halfSize.width;
-    position_.z = -std::min(std::max((pos.y / 120 - 1), -1.f), 1.f) * tube_.halfSize.height;
+    position_.x = std::min(std::max((pos.x / 160 - 1), -1.f), 1.f) * (tube_.halfSize.width - .25f);
+    position_.z = -std::min(std::max((pos.y / 120 - 1), -1.f), 1.f) * (tube_.halfSize.height - .25f);
     if (pos.z < hand->minRadius()) {
         position_.y = tube_.handMax - tube_.handMovement;
     } else if (pos.z > hand->maxRadius()) {
