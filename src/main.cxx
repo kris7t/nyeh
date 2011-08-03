@@ -2,23 +2,23 @@
 #include "3DView.hxx"
 #include "GameUpdater.hxx"
 #include "Cam.hxx"
-#include "Hand.hxx"
 #include "HistogramHand.hxx"
 #include "NetGame.hxx"
 #include "NetCam.hxx"
 #include "HandToModel.hxx"
+#include "Calibrate.hxx"
 
 static const int redBalls = 3;
 static const int yellowBalls = 12;
 
 volatile bool running;
 
-void camLoop(Cam_ c, NetCam_ nc, Hand_ h, HandToModel_ htm) {
+void camLoop(Cam_ c, NetCam_ nc, Hand_ h, HandFilter_ hf) {
     do {
         c->grabImage();
         nc->push(c->jpeg());
         h->update(c->frame());
-        htm->update(h);
+        hf->update(h);
     } while (running);
 }
 
@@ -42,11 +42,6 @@ int main(int argc, char * argv[]) {
             ballof = 0xffff;
         }
 
-        Cam_ c = Cam::create(atoi(argv[1]));
-        Hand_ hh(new HistogramHand(0.2, 0.1));
-
-        hh->calibrate(c);
-
         Tube tube;
         tube.halfSize = cv::Size2f(1.6, 1.2);
         tube.goal = 3;
@@ -56,8 +51,13 @@ int main(int argc, char * argv[]) {
         tube.handMax = 8;
         tube.spawnArea = 4;
 
-        ThreeDView view(cv::Size(1366, 768), tube);
+        Cam_ c = Cam::create(atoi(argv[1]));
+        Hand_ hh = HistogramHand::create();
+        HandFilter_ hf = HandFilter::create();
         HandToModel_ htm = HandToModel::create(tube);
+        Calibrate::create()->run(c, hh, hf, htm);
+
+        ThreeDView view(cv::Size(1366, 768), tube);
 
         GameState gs;
         gs.own_lives = 12;
@@ -81,10 +81,11 @@ int main(int argc, char * argv[]) {
 
         running = true;
 
-        boost::thread camThread(boost::bind(&camLoop, c, nc, hh, htm));
+        boost::thread camThread(boost::bind(&camLoop, c, nc, hh, hf));
 
         do {
             glfwSetTime(0.0);
+            htm->update(hf);
             view.render(balls, htm, gs, nc->frame(), c->frame());
             glfwSwapBuffers();
             glfwSleep(0.01);

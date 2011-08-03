@@ -4,40 +4,28 @@ HandToModel_ HandToModel::create(Tube tube) {
     return HandToModel_(new HandToModel(tube));
 }
 
-HandToModel::HandToModel(Tube tube) : tube_(tube) {
+HandToModel::HandToModel(Tube tube)
+    : tube_(tube),
+      calibration_(HandToModel::defaultCalibration) {
 }
 
-void HandToModel::update(Hand_ hand) {
+void HandToModel::update(HandFilter_ hand) {
     cv::Point3f pos = hand->position();
     cv::Point3f vel = hand->velocity();
-    position_.x = std::min(std::max(((pos.x - 10) / 140 - 1), -1.f), 1.f) * (tube_.halfSize.width - handSize);
-    position_.z = -std::min(std::max(((pos.y - 10) / 100 - 1), -1.f), 1.f) * (tube_.halfSize.height - handSize);
-    if (pos.z < hand->minRadius()) {
+    position_.x = std::min(std::max(((pos.x - 10) / 140 - 1), -1.f), 1.f)
+        * (tube_.halfSize.width - handSize);
+    position_.z = -std::min(std::max(((pos.y - 10) / 100 - 1), -1.f), 1.f)
+        * (tube_.halfSize.height - handSize);
+    if (pos.z < calibration_.minRadius) {
         position_.y = tube_.handMax - tube_.handMovement;
-    } else if (pos.z > hand->maxRadius()) {
+    } else if (pos.z > calibration_.maxRadius) {
         position_.y = tube_.handMax;
     } else {
-        double lambda = (hand->maxRadius() / pos.z - 1.0) / hand->kappa();
+        double lambda = (calibration_.maxRadius / pos.z - 1.0) * calibration_.kappa;
         position_.y = tube_.handMax - tube_.handMovement * lambda;
     }
-    velocity_.x = vel.x / 140 * tube_.halfSize.width;
-    velocity_.z = -vel.y / 100 * tube_.halfSize.height;
-    double phi = hand->maxRadius() * tube_.handMovement / hand->kappa();
+    velocity_.x = vel.x / 140 * (tube_.halfSize.width - handSize);
+    velocity_.z = vel.y / 100 * (tube_.halfSize.height - handSize);
+    double phi = calibration_.maxRadius * tube_.handMovement * calibration_.kappa;
     velocity_.y = phi / (pos.z * pos.z) * vel.z;
-}
-
-cv::Point3f HandToModel::position() volatile const {
-    cv::Point3f p;
-    p.x = position_.x;
-    p.y = position_.y;
-    p.z = position_.z;
-    return p;
-}
-
-cv::Point3f HandToModel::velocity() volatile const {
-    cv::Point3f p;
-    p.x = velocity_.x;
-    p.y = velocity_.y;
-    p.z = velocity_.z;
-    return p;
 }

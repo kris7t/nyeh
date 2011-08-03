@@ -1,36 +1,45 @@
 #pragma once
 
-#include "Hand.hxx"
+#include "Cam.hxx"
+#include "HandToModel.hxx"
 
-class HistogramHand : public Hand {
+class HistogramHand;
+typedef std::tr1::shared_ptr<HistogramHand> Hand_;
+
+class HistogramHand {
     public:
-        HistogramHand(double fillratio, double t);
-        virtual void calibrate(Cam_ cam);
-        virtual void update(const cv::Mat & frame);
-        virtual cv::Point3f position() volatile const;
-        virtual cv::Point3f velocity() volatile const;
-        virtual double minRadius() const;
-        virtual double maxRadius() const;
-        virtual double kappa() const;
+        static const struct Calibration {
+            int chs[3];
+            int histSize[3];
+            float ranges[3][2];
+            cv::Mat hist;
+            double fillRatio;
+        } defaultCalibration;
+        
+        static Hand_ create();
 
+        HistogramHand();
+        inline const Calibration & calibration() const {
+            return calibration_;
+        }
+        inline void calibration(const Calibration & value) {
+            calibration_ = value;
+        }
+        void update(const cv::Mat & frame);
+        inline cv::Point3f position() volatile const {
+            return cv::Point3f(
+                    position_.x,
+                    position_.y,
+                    position_.z
+                    );
+        }
+        inline bool valid() volatile const {
+            return valid_;
+        }
     private:
-        void measureHist(Cam_ cap, cv::MatND & hist, cv::Point center, int radius, bool accumulate = true);
-        double measureRadius(Cam_ cap);
-
         volatile cv::Point3f position_;
-        volatile cv::Point3f velocity_;
-        double minRadius_;
-        double maxRadius_;
-        double kappa_;
-
-        std::vector<std::vector<cv::Point> > contours;
-
-        cv::Mat cam, hsv, mask, bp, binsearch;
-        cv::MatND hist;
-
-        double fillratio_;
-
-        cv::KalmanFilter kf;
-
-        cv::Mat measurement;
+        volatile bool valid_;
+        Calibration calibration_;
+        const float * theRanges_[3];
+        cv::Mat hsv_, bp_, binsearch_;
 };

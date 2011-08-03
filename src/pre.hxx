@@ -3,6 +3,7 @@
 
 #include <cctype>
 #include <ctime>
+#include <cstring>
 
 #include <iostream>
 #include <vector>
