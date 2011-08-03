@@ -10,18 +10,18 @@
 #include <tr1/memory>
 
 // OpenCV headers
-#include <cv.h>
-#include <cv.hpp>
-#include <cvaux.h>
-#include <cvaux.hpp>
-#include <highgui.h>
+#include <opencv2/core/core.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/video/tracking.hpp>
+#include <opencv2/highgui/highgui.hpp>
 
 // OpenGL headers
-#include <glew.h>
-#include <glfw.h>
-#include <glu.h>
+#include <GL/glew.h>
+#include <GL/glfw.h>
+#include <GL/glu.h>
 
 // v4l
+#include <sys/mman.h>
 #include <linux/videodev2.h>
 #include <libv4l2.h>
 #include <fcntl.h>
