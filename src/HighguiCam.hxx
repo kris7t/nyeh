@@ -4,7 +4,7 @@
 
 class HighguiCam : public Cam {
 public:
-    HighguiCam(int device = 0);
+    HighguiCam(cv::Size size, int device = 0);
 
     void grabImage();
 

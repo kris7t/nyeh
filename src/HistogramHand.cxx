@@ -12,7 +12,10 @@ Hand_ HistogramHand::create() {
 }
 
 HistogramHand::HistogramHand()
-    : theRanges_{calibration_.ranges[0], calibration_.ranges[1], calibration_.ranges[2]} {
+    : theRanges_{calibration_.ranges[0],
+        calibration_.ranges[1],
+        calibration_.ranges[2]},
+      erodeFilter_(cv::createMorphologyFilter(cv::MORPH_ERODE, CV_8UC1, closekernel)) {
 }
 
 static inline bool findBlob(const cv::Mat & binsearch,
@@ -43,11 +46,11 @@ static inline bool findBlob(const cv::Mat & binsearch,
 void HistogramHand::update(const cv::Mat & cam) {
     cv::cvtColor(cam, hsv_, CV_BGR2HSV);
     cv::calcBackProject(&hsv_, 1, calibration_.chs, calibration_.hist, bp_, theRanges_);
-    cv::erode(bp_, bp_, closekernel);
+    erodeFilter_->apply(bp_, bp_);
 
     cv::Rect rect(0, 0, 0, 0);
     int area = 0;
-    int s = 0;
+    /*int s = 0;
     int e = 255;
     while (std::abs(s - e) > 1) {
         double v = (s + e) / 2;
@@ -69,10 +72,19 @@ void HistogramHand::update(const cv::Mat & cam) {
             rect = rect_iter;
             area = area_iter;
         }
+    }*/
+
+    cv::Point maxl;
+    double max;
+    cv::minMaxLoc(bp_, NULL, &max, NULL, &maxl);
+    double limit = max - 1;
+    if (limit > 0) {
+        area = cv::floodFill(bp_, maxl, cv::Scalar(0), &rect,
+                cv::Scalar(limit), cv::Scalar(0), 8 | CV_FLOODFILL_FIXED_RANGE);
     }
     
     if (rect.height > 0 && rect.area() * calibration_.fillRatio < area) {
-        position_.x = 319 - (rect.x + rect.width / 2.0f);
+        position_.x = cam.cols - 1 - (rect.x + rect.width / 2.0f);
         position_.y = rect.y + rect.height / 2.0f;
         position_.z = std::max(rect.height, rect.width) / 2.0f;
         valid_ = true;

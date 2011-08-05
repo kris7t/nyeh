@@ -4,7 +4,7 @@
 
 class UvcCam : public Cam {
 public:
-    UvcCam(int device = 0);
+    UvcCam(cv::Size size, int device = 0);
     ~UvcCam();
 
     void grabImage();

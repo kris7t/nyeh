@@ -10,6 +10,14 @@ public:
     virtual void grabImage() = 0;
     virtual const cv::Mat& jpeg() const = 0;
     virtual const cv::Mat& frame() const = 0;
+    
+    cv::Size size() const {
+        return size_;
+    }
 
-    static Cam_ create(int camId);
+    static Cam_ create(cv::Size size, int camId = 0);
+protected:
+    Cam(cv::Size size);
+private:
+    const cv::Size size_;
 };

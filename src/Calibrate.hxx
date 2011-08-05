@@ -24,11 +24,16 @@ class Calibrate {
         }
         void run(Cam_ cap, Hand_ hand, HandFilter_ filter, HandToModel_ toModel);
     private:
-        void measureHist(Cam_ cap, cv::Point2f center, int radius, bool accumulate = true);
+        void measureHist(Cam_ cap, cv::Point2f center, float radius, bool accumulate = true);
         double measureRadius(Cam_ cap, Hand_ hand, HandFilter_ filter);
+        cv::Point2f measurePosition(Cam_ cap, Hand_ hand, HandFilter_ filter);
+        cv::Point3f measurePositionAndRadius(Cam_ cap, Hand_ hand, HandFilter_ filter);
         void writableFlippedShot(Cam_ cap);
         void guiHist(Cam_ cap);
         void guiRadius(Cam_ cap, Hand_ hand, HandFilter_ filter);
+        void guiBounds(Cam_ cap, Hand_ hand, HandFilter_ filter);
+        void drawCircle(cv::Point2f center, double radius);
+        void imshow();
 
         HistogramHand::Calibration handCalibration_;
         HandFilter::Calibration filterCalibration_;

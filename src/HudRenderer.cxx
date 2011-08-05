@@ -6,7 +6,8 @@ static const float heartSpacing = 5;
 static const float ballsBarHeight = 30;
 static const float ballsBarHalfWidth = 150;
 
-HudRenderer::HudRenderer(const Tube & tube, cv::Size size) : tube_(tube), size_(size) {
+HudRenderer::HudRenderer(const Tube & tube, cv::Size size)
+    : tube_(tube), size_(size), imgsize_(160, 120) {
     for (int i = 0; i < 2; ++i) {
         texture_[i] = 0;
     }
@@ -38,7 +39,7 @@ void HudRenderer::upload(const cv::Mat & frame) {
     glBindTexture(GL_TEXTURE_2D, texture_[1]);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, frame.cols, frame.rows, 0, GL_BGR,
                  GL_UNSIGNED_BYTE, frame.ptr(0));
-    imgsize_ = cv::Size(frame.cols / 2, frame.rows / 2);
+    imgsize_.width = imgsize_.height * frame.cols / frame.rows;
 }
 
 static void drawHeart(int x, int y) {

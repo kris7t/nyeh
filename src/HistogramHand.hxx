@@ -33,8 +33,13 @@ class HistogramHand {
                     position_.z
                     );
         }
-        inline bool valid() volatile const {
-            return valid_;
+        inline bool valid() volatile {
+            if (valid_) {
+                return true;
+                valid_ = false;
+            } else {
+                return false;
+            }
         }
     private:
         volatile cv::Point3f position_;
@@ -42,4 +47,5 @@ class HistogramHand {
         Calibration calibration_;
         const float * theRanges_[3];
         cv::Mat hsv_, bp_, binsearch_;
+        cv::Ptr<cv::FilterEngine> erodeFilter_;
 };

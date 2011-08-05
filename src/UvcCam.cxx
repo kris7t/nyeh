@@ -1,6 +1,6 @@
 #include "UvcCam.hxx"
 
-UvcCam::UvcCam(int device) {
+UvcCam::UvcCam(cv::Size size, int device) : Cam(size) {
     memset(map, 0, sizeof(void *) * BUFFERS);
 
     std::string str = (boost::format("/dev/video%d") % device).str();
@@ -23,8 +23,8 @@ UvcCam::UvcCam(int device) {
     v4l2_format fmt;
     memset(&fmt, 0, sizeof(v4l2_format));
     fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-    fmt.fmt.pix.width = 320;
-    fmt.fmt.pix.height = 240;
+    fmt.fmt.pix.width = size.width;
+    fmt.fmt.pix.height = size.height;
     fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_MJPEG;
     fmt.fmt.pix.field = V4L2_FIELD_ANY;
     errno = 0;
@@ -113,7 +113,7 @@ UvcCam::UvcCam(int device) {
         throw std::runtime_error("can't start capture");
     }
 
-    frame_.create(240, 320, CV_8UC3);
+    frame_.create(this->size(), CV_8UC3);
 }
 
 void UvcCam::disable(const std::string& name, int ctrlid) {

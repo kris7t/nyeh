@@ -10,12 +10,16 @@ HandToModel::HandToModel(Tube tube)
 }
 
 void HandToModel::update(HandFilter_ hand) {
+    float xAbsMax = tube_.halfSize.width - handSize,
+        zAbsMax = tube_.halfSize.height - handSize;
     cv::Point3f pos = hand->position();
     cv::Point3f vel = hand->velocity();
-    position_.x = std::min(std::max(((pos.x - 10) / 140 - 1), -1.f), 1.f)
-        * (tube_.halfSize.width - handSize);
-    position_.z = -std::min(std::max(((pos.y - 10) / 100 - 1), -1.f), 1.f)
-        * (tube_.halfSize.height - handSize);
+    position_.x = std::min(std::max(
+                (pos.x - calibration_.offset.x) / calibration_.halfSize.width - 1,
+                -1.f), 1.f) * xAbsMax;
+    position_.z = -std::min(std::max(
+                (pos.y - calibration_.offset.y) / calibration_.halfSize.height - 1,
+                -1.f), 1.f) * zAbsMax;
     if (pos.z < calibration_.minRadius) {
         position_.y = tube_.handMax - tube_.handMovement;
     } else if (pos.z > calibration_.maxRadius) {
@@ -24,8 +28,8 @@ void HandToModel::update(HandFilter_ hand) {
         double lambda = (calibration_.maxRadius / pos.z - 1.0) * calibration_.kappa;
         position_.y = tube_.handMax - tube_.handMovement * lambda;
     }
-    velocity_.x = vel.x / 140 * (tube_.halfSize.width - handSize);
-    velocity_.z = vel.y / 100 * (tube_.halfSize.height - handSize);
+    velocity_.x = vel.x / calibration_.halfSize.width * xAbsMax;
+    velocity_.z = vel.y / calibration_.halfSize.height * zAbsMax;
     double phi = calibration_.maxRadius * tube_.handMovement * calibration_.kappa;
     velocity_.y = phi / (pos.z * pos.z) * vel.z;
 }

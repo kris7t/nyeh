@@ -10,6 +10,8 @@ class HandToModel {
     public:
         static const struct Calibration {
             float minRadius, maxRadius, kappa;
+            cv::Point2f offset;
+            cv::Size2f halfSize;
         } defaultCalibration;
 
         static HandToModel_ create(Tube tube);

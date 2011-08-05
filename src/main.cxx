@@ -18,7 +18,7 @@ void camLoop(Cam_ c, NetCam_ nc, Hand_ h, HandFilter_ hf) {
         c->grabImage();
         nc->push(c->jpeg());
         h->update(c->frame());
-        hf->update(h);
+        //hf->update(h);
     } while (running);
 }
 
@@ -51,7 +51,7 @@ int main(int argc, char * argv[]) {
         tube.handMax = 8;
         tube.spawnArea = 4;
 
-        Cam_ c = Cam::create(atoi(argv[1]));
+        Cam_ c = Cam::create(cv::Size(640, 480), atoi(argv[1]));
         Hand_ hh = HistogramHand::create();
         HandFilter_ hf = HandFilter::create();
         HandToModel_ htm = HandToModel::create(tube);
@@ -85,6 +85,7 @@ int main(int argc, char * argv[]) {
 
         do {
             glfwSetTime(0.0);
+            hf->update(hh);
             htm->update(hf);
             view.render(balls, htm, gs, nc->frame(), c->frame());
             glfwSwapBuffers();
