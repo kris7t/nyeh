@@ -30,6 +30,7 @@ class HandToModel {
         inline void calibration(const Calibration & value) {
             calibration_ = value;
         }
+        void extrapolate(double dt);
     private:
         Tube tube_;
         Calibration calibration_;

@@ -33,3 +33,9 @@ void HandToModel::update(HandFilter_ hand) {
     double phi = calibration_.maxRadius * tube_.handMovement * calibration_.kappa;
     velocity_.y = phi / (pos.z * pos.z) * vel.z;
 }
+
+void HandToModel::extrapolate(double dt) {
+    position_.x += velocity_.x;
+    position_.y += velocity_.y;
+    position_.z += velocity_.z;
+}
