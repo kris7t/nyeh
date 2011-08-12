@@ -32,6 +32,8 @@
 #include <boost/format.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/thread.hpp>
+#include <boost/regex.hpp>
+#include <boost/program_options.hpp>
 
 // socket
 #include <sys/types.h>

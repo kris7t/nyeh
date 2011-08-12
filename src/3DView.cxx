@@ -74,8 +74,6 @@ static void renderSphere(const cv::Point3f pos, float size, float r, float g, fl
 ThreeDView::ThreeDView(cv::Size size, Tube tube)
     : tube_(tube), hudRenderer_(tube_, size), camRenderer_(tube) {
     if (!glInited) {
-        glewInit();
-        glfwInit();
         glInited = true;
     } else {
         throw "3DView already running!";

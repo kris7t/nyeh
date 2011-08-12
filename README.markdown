@@ -16,16 +16,18 @@ You provide your opponent with your IP address and ensure that ports
 *14598* and *14599* are open on your router (if you have one).
 Then issue
 
-    bin/nyeh.x <cam id>
+    bin/nyeh.x
 
-where `<cam id>` is probably 0, unless you have more than one webcam.
+You opponent should issue
 
-You opponent then should issue
-
-    bin/nyeh <cam id> <your ip>
+    bin/nyeh.x -h <your ip/hostname>
 
 then follow the instructions. The game will begin shortly and last until
 someone loses all their lives.
+
+For program options, issue
+
+    bin/nyeh.x --help
 
 ## Building
 

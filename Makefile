@@ -3,7 +3,7 @@ LD := g++
 
 PACKAGES := opencv glew libglfw glu
 CXXFLAGS := -Wall -std=gnu++0x $(shell pkg-config --cflags $(PACKAGES)) -Isrc -c
-LDFLAGS := $(shell pkg-config --libs $(PACKAGES)) -lboost_thread
+LDFLAGS := $(shell pkg-config --libs $(PACKAGES)) -lboost_thread -lboost_program_options -lboost_regex
 
 # un-uncomment for release
 CXXFLAGS += -ggdb -D_NYEH_DEBUG
