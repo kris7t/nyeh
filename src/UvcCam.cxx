@@ -33,7 +33,8 @@ UvcCam::UvcCam(cv::Size size, int device) : Cam(size) {
         v4l2_close(fd);
         throw std::runtime_error("Can't set format");
     }
-    if (fmt.fmt.pix.pixelformat != V4L2_PIX_FMT_JPEG) {
+    if (fmt.fmt.pix.pixelformat != V4L2_PIX_FMT_JPEG
+            && fmt.fmt.pix.pixelformat != V4L2_PIX_FMT_MJPEG) {
         v4l2_close(fd);
         throw std::runtime_error("jpg not supported");
     }
