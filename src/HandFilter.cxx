@@ -32,7 +32,7 @@ void HandFilter::calibration(const HandFilter::Calibration & value) {
     kf_.measurementNoiseCov.at<float>(2, 2) = calibration_.sigma2_mr;
 }
 
-void HandFilter::correctFilter(Hand_ hand) {
+void HandFilter::correctFilter(const Hand_ & hand) {
     if (hand->valid()) {
         cv::Point3f measuredPos = hand->position();
         measurement_.at<float>(0, 0) = measuredPos.x;

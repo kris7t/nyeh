@@ -15,7 +15,7 @@ public:
         return size_;
     }
 
-    static Cam_ create(cv::Size size, int camId = 0);
+    static Cam_ create(cv::Size size, int camId = 0, bool jpg = false);
 protected:
     Cam(cv::Size size);
 private:

@@ -63,6 +63,7 @@ int main(int argc, char * argv[]) {
             ("screen-res,r", po::value<cv::Size>()->default_value(default_screen_res), "Screen resolution, required.")
             ("cam-res,R", po::value<cv::Size>()->default_value(default_cam_res), "Webcam resolution.")
             ("cam,c", po::value<int>()->default_value(0), "Webcam id.")
+            ("jpeg,j", "Try using UVC to directly interface with the webcam and fetch hardware-encoded JPEG frames.")
             ("host,h", po::value<std::string>(), "When specified, instead of setting up a server,"
                                                  "the game will connect to the host as the client.")
         ;
@@ -100,7 +101,7 @@ int main(int argc, char * argv[]) {
         tube.handMax = 8;
         tube.spawnArea = 4;
 
-        Cam_ c = Cam::create(vm["cam-res"].as<cv::Size>(), vm["cam"].as<int>());
+        Cam_ c = Cam::create(vm["cam-res"].as<cv::Size>(), vm["cam"].as<int>(), vm.count("jpeg"));
         Hand_ hh = HistogramHand::create();
         HandFilter_ hf = HandFilter::create();
         HandToModel_ htm = HandToModel::create(tube);

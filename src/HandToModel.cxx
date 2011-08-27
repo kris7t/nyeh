@@ -9,7 +9,7 @@ HandToModel::HandToModel(Tube tube)
       calibration_(HandToModel::defaultCalibration) {
 }
 
-void HandToModel::update(HandFilter_ hand) {
+void HandToModel::update(const HandFilter_ & hand) {
     float xAbsMax = tube_.halfSize.width - handSize,
         zAbsMax = tube_.halfSize.height - handSize;
     cv::Point3f pos = hand->position();

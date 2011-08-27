@@ -50,29 +50,6 @@ void HistogramHand::update(const cv::Mat & cam) {
 
     cv::Rect rect(0, 0, 0, 0);
     int area = 0;
-    /*int s = 0;
-    int e = 255;
-    while (std::abs(s - e) > 1) {
-        double v = (s + e) / 2;
-        cv::threshold(bp_, binsearch_, v, 255, CV_THRESH_BINARY);
-        
-        cv::Point maxl;
-        if (findBlob(binsearch_, &maxl) == 0) {
-            e = v;
-            continue;
-        }
-        cv::Rect rect_iter;
-        int area_iter = cv::floodFill(binsearch_, maxl, cv::Scalar(0), &rect_iter,
-                cv::Scalar(0), cv::Scalar(0), 8 | CV_FLOODFILL_FIXED_RANGE);
-
-        if (findBlob(binsearch_, NULL, maxl)) {
-            s = v;
-        } else {
-            e = v;
-            rect = rect_iter;
-            area = area_iter;
-        }
-    }*/
 
     cv::Point maxl;
     double max;

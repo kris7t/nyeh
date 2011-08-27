@@ -1,14 +1,18 @@
 #include "HighguiCam.hxx"
 #include "UvcCam.hxx"
 
-Cam_ Cam::create(cv::Size size, int camId) {
+Cam_ Cam::create(cv::Size size, int camId, bool jpg) {
     Cam_ c;
-    try {
-        c.reset(new UvcCam(size, camId));
-    } catch (const std::exception & e) {
-        std::cerr << "fallback to highgui camera (may be slow and shitty)"
-                  << std::endl;
-        std::cerr << "what(): " << e.what() << std::endl;
+    if (jpg) {
+        try {
+            c.reset(new UvcCam(size, camId));
+        } catch (const std::exception & e) {
+            std::cerr << "fallback to highgui camera (may be slow and shitty)"
+                << std::endl;
+            std::cerr << "what(): " << e.what() << std::endl;
+                c.reset(new HighguiCam(size, camId));
+        }
+    } else {
         c.reset(new HighguiCam(size, camId));
     }
     return c;

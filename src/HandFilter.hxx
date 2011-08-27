@@ -35,7 +35,7 @@ class HandFilter {
         }
         void calibration(const Calibration & value);
     private:
-        void correctFilter(Hand_ hand);
+        void correctFilter(const Hand_ & hand);
         void updateMatrices(double t);
         void makePrediction();
         

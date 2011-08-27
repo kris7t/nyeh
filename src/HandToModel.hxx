@@ -17,7 +17,7 @@ class HandToModel {
         static HandToModel_ create(Tube tube);
 
         HandToModel(Tube tube);
-        void update(HandFilter_ hand);
+        void update(const HandFilter_ & hand);
         inline const cv::Point3f & position() const {
             return position_;
         }
