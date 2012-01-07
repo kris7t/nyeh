@@ -18,7 +18,7 @@ $cxx_flags = "-c -Wall -std=gnu++0x -ggdb -pipe -D_NYEH_DEBUG -I#{OBJ_DIR} -I#{S
 # Flags used for dependency generation.
 $dep_flags = "-MM -std=gnu++0x -pipe -D_NYEH_DEBUG -MG -MP -I#{SRC_DIR}"
 # Flags used for linking.
-$ld_flags = "-ggdb -pipe -lboost_thread -lboost_program_options -lboost_regex"
+$ld_flags = "-ggdb -pipe -lboost_thread -lboost_program_options -lboost_regex -lrt -lv4l2"
 
 PRE_SOURCE = File.join SRC_DIR, 'pre.hxx'
 PRE_HEADER = File.join OBJ_DIR, 'pre.hxx.gch'

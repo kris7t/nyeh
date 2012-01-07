@@ -33,8 +33,8 @@ For program options, issue
 
 Nyeh needs the following dependencies to compile successfully:
 
-* GNU Make
-* GCC 4.4 a newer (for C++0x support)
+* Rake
+* GCC 4.4 or newer (for C++0x support)
 * Boost 1.4x or newer
 * GLEW
 * GLFW
@@ -44,10 +44,9 @@ For a nice GUI, compile OpenCV with the `-D WITH_QT=ON` flag.
 
 To build Nyeh, just issue
 
-    make
+    rake
 
 in the root directory of your cloned repository.
-Using multiple threads (for example `-j8`) is advised.
 
 The program executable is `bin/nyeh.x`.
 
