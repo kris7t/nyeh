@@ -11,7 +11,7 @@ CXX = 'g++'
 # Binary used for linking.
 LD = 'g++'
 
-PACKAGES = %w[opencv glew libglfw glu fontconfig ftgl lua]
+PACKAGES = %w[opencv glew libglfw glu]
 
 # Flags used for compilation.
 $cxx_flags = "-c -Wall -std=gnu++0x -ggdb -pipe -D_NYEH_DEBUG -I#{OBJ_DIR} -I#{SRC_DIR}"
